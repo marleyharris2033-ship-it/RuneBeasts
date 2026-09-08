@@ -534,7 +534,20 @@ function interactWorld(){
       return;
     }
     if(nearbyNpc.id==='mina'){worldSay('Mina: The clinic is south-west. The fountain in the square can restore your party too.');return;}
-    if(nearbyNpc.id==='quarryman'){worldSay(state.flags.mineCache?'Bram: Heard you found the old cache. Watch yourself near Whisper Cave.':'Bram: Mine entrance is up the north path. Wild Rune Beasts get stronger deeper east.');return;}
+    if(nearbyNpc.id==='quarryman'){
+      if(!state.flags.caveQuestAccepted){
+        state.flags.caveQuestAccepted=true;save();
+        worldSay('Bram: Something huge has been terrorising the quarry from Whisper Cave. Please head inside and defeat it before anyone gets hurt.',4800);
+      }else if(!state.flags.caveBossDefeated){
+        worldSay('Bram: It is still in Whisper Cave. The tunnels twist around badly — keep going deeper until you find it.',3600);
+      }else if(!state.flags.caveQuestRewarded){
+        state.flags.caveQuestRewarded=true;state.shards+=60;state.inventory.greaterSeal=(state.inventory.greaterSeal||0)+2;grantPartyXp(80);save();
+        worldSay('Bram: You did it! Eastbank can breathe again. Take 60 Rune Shards, 2 Greater Rune Seals, and 80 XP for your whole party.',5200);
+      }else{
+        worldSay('Bram: Eastbank has been peaceful since you cleared Whisper Cave. We owe you one.');
+      }
+      return;
+    }
   }
 
   const building=nearestBuildingDoor();
@@ -547,7 +560,10 @@ function interactWorld(){
       else worldSay('Old Eastbank Mine — the shard cache is empty now.');
       return;
     }
-    if(landmark.id==='cave'){worldSay('Whisper Cave — a strange pulse comes from deeper inside. The passage is sealed for now.',3600);return;}
+    if(landmark.id==='cave'){
+      if(!state.flags.caveQuestAccepted){worldSay('Whisper Cave — Bram is nearby and seems worried about something inside.',3000);return;}
+      enterCave();return;
+    }
   }
 
   const point=INTERACTION_POINTS.map(p=>({p,d:distanceToTile(p.tx,p.ty)})).filter(x=>x.d<38).sort((a,b)=>a.d-b.d)[0]?.p;
@@ -565,7 +581,7 @@ function passiveWorldMessage(tx,ty){
   const g=groundAt(tx,ty);
   if(g==='g'){$('#worldText').textContent='Tall grass rustles nearby — wild Rune Beasts live here.';return;}
   if(tx>=73){
-    $('#worldText').textContent=state.flags.workshopIntro&&!state.flags.mineCache?'Eastbank — search the old mine for Rowan.':'Explore Eastbank’s quarry paths and wild grass.';
+    $('#worldText').textContent=state.flags.caveQuestAccepted&&!state.flags.caveBossDefeated?'Eastbank — Bram asked you to hunt the monster in Whisper Cave.':state.flags.workshopIntro&&!state.flags.mineCache?'Eastbank — search the old mine for Rowan.':'Explore Eastbank’s quarry paths and wild grass.';
     return;
   }
   $('#worldText').textContent=!state.flags.workshopIntro?'Explore Runevale. Rowan is outside the workshop east of the square.':!state.flags.mineCache?'Rowan asked you to investigate the mine beyond the bridge.':'Explore Runevale Town.';
@@ -922,7 +938,13 @@ function resetBattleButtons(){
   $$('#battleScreen button').forEach(btn=>btn.disabled=false);
   closeSubmenus();
 }
-function startBattle(beast){let lead=state.party.findIndex(m=>m.hp>0); if(lead<0){healParty(false); lead=0;} battle={id:++battleSeq,enemy:makeMon(beast.id,2+Math.floor(Math.random()*7)),active:lead,locked:false}; state.collection[beast.id]=true; save(); resetBattleButtons(); renderBattle(); showScreen('battleScreen'); setBattleText(`A wild ${beast.name} appeared!`)}
+function startBattle(beast,level=null,opts={}){
+  let lead=state.party.findIndex(m=>m.hp>0);if(lead<0){healParty(false);lead=0;}
+  const enemy=makeMon(beast.id,level??(2+Math.floor(Math.random()*7)));
+  battle={id:++battleSeq,enemy,active:lead,locked:false,...opts};
+  state.collection[beast.id]=true;save();resetBattleButtons();renderBattle();showScreen('battleScreen');
+  setBattleText(opts.boss?`Boss ${beast.name} blocks your path!`:`A wild ${beast.name} appeared!`);
+}
 function renderBattle(){if(!battle) return; const p=activeMon(), e=battle.enemy; $('#enemyName').textContent=beastBy(e.id).name; $('#enemyLevel').textContent=`Lv ${e.level}`; $('#enemyType').innerHTML=typeTag(beastBy(e.id).type); $('#playerName').textContent=beastBy(p.id).name; $('#playerLevel').textContent=`Lv ${p.level}`; $('#playerType').innerHTML=typeTag(beastBy(p.id).type); $('#enemySprite').innerHTML=creatureArt(e.id,'lg'); $('#playerSprite').innerHTML=creatureArt(p.id,'lg'); $('#enemyHpBar').style.width=`${clamp(100*e.hp/maxHp(e),0,100)}%`; $('#playerHpBar').style.width=`${clamp(100*p.hp/maxHp(p),0,100)}%`; $('#playerHpText').textContent=`${p.hp}/${maxHp(p)} HP`;}
 function setBattleText(t){$('#battleText').textContent=t}
 function setBattleLock(v){
@@ -936,9 +958,20 @@ function showMoves(){if(!battle||battle.locked) return; const p=activeMon(); $('
 function useMove(name){if(!battle||battle.locked) return; closeSubmenus(); setBattleLock(true); const p=activeMon(), e=battle.enemy, result=calcDamage(p,e,name); if(!result.hit){setBattleText(`${beastBy(p.id).name} used ${name}, but missed!`); battleLater(enemyTurn,650); return;} e.hp=Math.max(0,e.hp-result.damage); setBattleText(`${beastBy(p.id).name} used ${name}! ${result.damage} damage.${result.mod>1?' Super effective!':result.mod<1?' Not very effective.':''}`); renderBattle(); battleLater(()=>e.hp<=0?winBattle():enemyTurn(),700)}
 function enemyTurn(){if(!battle) return; const p=activeMon(), e=battle.enemy; if(!p||p.hp<=0){handleFaint(); return;} const pool=knownMoves(e), name=pool[Math.floor(Math.random()*pool.length)]||'Scratch'; const result=calcDamage(e,p,name); if(!result.hit){setBattleText(`${beastBy(e.id).name} used ${name}, but missed!`); battleLater(()=>setBattleLock(false),450); return;} p.hp=Math.max(0,p.hp-result.damage); setBattleText(`${beastBy(e.id).name} used ${name}! ${result.damage} damage.`); renderBattle(); save(); battleLater(()=>p.hp<=0?handleFaint():setBattleLock(false),650)}
 function handleFaint(){if(!battle) return; const cur=activeMon(); if(cur) setBattleText(`${beastBy(cur.id).name} fainted!`); const next=state.party.findIndex((m,i)=>i!==battle.active && m.hp>0); if(next<0){setTimeout(()=>{battle=null; healParty(false); showScreen('worldScreen'); $('#worldText').textContent='Your party recovered at the spring.';},800)} else {battleLater(()=>{battle.active=next; renderBattle(); setBattleText(`${beastBy(activeMon().id).name} steps in!`); setBattleLock(false);},650)}}
-function winBattle(){if(!battle) return; const p=activeMon(); const gain=18+battle.enemy.level*8; p.xp+=gain; state.wins+=1; state.shards+=8; while(p.level<50&&p.xp>=xpNeed(p.level)){p.xp-=xpNeed(p.level); p.level+=1; p.hp=maxHp(p)} setBattleText(`Victory! ${beastBy(p.id).name} gained ${gain} XP.`); battle=null; save(); setTimeout(()=>showScreen('worldScreen'),850)}
+function winBattle(){
+  if(!battle)return;
+  const wasCaveBoss=!!battle.caveBoss;
+  const p=activeMon(),gain=18+battle.enemy.level*8;
+  addXp(p,gain);state.wins+=1;state.shards+=wasCaveBoss?20:8;
+  if(wasCaveBoss){
+    state.flags.caveBossDefeated=true;caveBossVisible=false;grantPartyXp(45);
+    setBattleText(`Titanox was defeated! Whole party +45 XP. Return to Bram for your reward.`);
+  }else setBattleText(`Victory! ${beastBy(p.id).name} gained ${gain} XP.`);
+  battle=null;save();setTimeout(()=>showScreen('worldScreen'),wasCaveBoss?1500:850);
+}
 function attemptCapture(sealType='runeSeal'){
   if(!battle||battle.locked)return;
+  if(battle.noCapture){setBattleText('This boss cannot be bound during the quest battle.');return;}
   const invKey=sealType==='greaterSeal'?'greaterSeal':'runeSeal';
   if((state.inventory[invKey]||0)<=0){setBattleText(invKey==='greaterSeal'?'You have no Greater Rune Seals.':'You have no Rune Seals. Visit the Rune Market.');return;}
   setBattleLock(true);
@@ -993,7 +1026,7 @@ function useBattleItem(id){
   }
 }
 function showSwitch(){if(!battle||battle.locked) return; $('#switchMenu').innerHTML=state.party.map((m,i)=>`<button class="switchChoice" data-i="${i}" ${i===battle.active||m.hp<=0?'disabled':''}><span>${beastBy(m.id).name} Lv${m.level}</span><span>${m.hp}/${maxHp(m)} HP</span></button>`).join(''); $('#mainBattleMenu').classList.add('hidden'); $('#switchMenu').classList.remove('hidden'); $('#cancelBattleSubmenu').classList.remove('hidden'); $$('.switchChoice').forEach(btn=>btn.onclick=()=>switchTo(+btn.dataset.i));}
-function switchTo(i){if(!battle||battle.locked||i===battle.active||state.party[i].hp<=0) return; closeSubmenus(); battle.active=i; renderBattle(); setBattleText(`${beastBy(activeMon().id).name}, you're up!`); setBattleLock(true); battleLater(enemyTurn,600)} function runAway(){if(!battle||battle.locked) return; if(Math.random()<0.85){setBattleText('You escaped safely.'); battle=null; setTimeout(()=>showScreen('worldScreen'),400)} else {setBattleText("Couldn't escape!"); setBattleLock(true); battleLater(enemyTurn,550)}}
+function switchTo(i){if(!battle||battle.locked||i===battle.active||state.party[i].hp<=0) return; closeSubmenus(); battle.active=i; renderBattle(); setBattleText(`${beastBy(activeMon().id).name}, you're up!`); setBattleLock(true); battleLater(enemyTurn,600)} function runAway(){if(!battle||battle.locked) return; if(battle.boss){setBattleText('There is no running from this boss fight!');return;} if(Math.random()<0.85){setBattleText('You escaped safely.'); battle=null; setTimeout(()=>showScreen('worldScreen'),400)} else {setBattleText("Couldn't escape!"); setBattleLock(true); battleLater(enemyTurn,550)}}
 // setup + controls
 function setHeld(dir,val){input[dir]=val} function bindControl(btn){const dir=btn.dataset.dir; const on=e=>{e.preventDefault(); setHeld(dir,true)}; const off=e=>{e.preventDefault(); setHeld(dir,false)}; ['pointerdown','touchstart'].forEach(ev=>btn.addEventListener(ev,on,{passive:false})); ['pointerup','pointerleave','pointercancel','touchend','touchcancel'].forEach(ev=>btn.addEventListener(ev,off,{passive:false}));}
 document.addEventListener('keydown',e=>{if(e.key==='ArrowUp') input.up=true; if(e.key==='ArrowDown') input.down=true; if(e.key==='ArrowLeft') input.left=true; if(e.key==='ArrowRight') input.right=true; if((e.key===' '||e.key==='Enter')&&!e.repeat){e.preventDefault();interactWorld();}}); document.addEventListener('keyup',e=>{if(e.key==='ArrowUp') input.up=false; if(e.key==='ArrowDown') input.down=false; if(e.key==='ArrowLeft') input.left=false; if(e.key==='ArrowRight') input.right=false});
