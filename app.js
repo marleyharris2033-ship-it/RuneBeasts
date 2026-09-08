@@ -121,20 +121,32 @@ const LARGE_COLLIDERS=[
   {x:49*TILE,y:16*TILE-58,w:124,h:74,label:'mine'},
   {x:49*TILE,y:32*TILE-58,w:124,h:70,label:'cave'}
 ];
+const WORLD_NPCS=[
+  {id:'rowan',name:'Rowan',tx:24,ty:19,shirt:'#6c4d9e',hair:'#5b3b25'},
+  {id:'mina',name:'Mina',tx:18,ty:24,shirt:'#3f7fb5',hair:'#7b4b2a'},
+  {id:'quarryman',name:'Bram',tx:50,ty:23,shirt:'#8a6336',hair:'#403126'}
+];
+const INTERACTION_POINTS=[
+  {id:'townSign',tx:18,ty:34},
+  {id:'mine',tx:53,ty:18},
+  {id:'cave',tx:53,ty:34},
+  {id:'bridge',tx:43,ty:23}
+];
+function npcBox(n){return {x:n.tx*TILE+3,y:n.ty*TILE+2,w:10,h:12};}
 const SOLID_GROUND=new Set(['w','W']);
 const SOLID_OBJECT=new Set(['t','t2','tp','n','rk','bu','st','bn','lp','sg','hl','hm','hr','wl','wr']);
 const ENCOUNTER_GROUND=new Set(['g']); const HEAL_GROUND=new Set(['S']); const SAVE_GROUND=new Set([]); const SAVE_OBJECT=new Set(['sv']); const DOOR_OBJECT=new Set(['wd']);
-let state={party:[],collection:{},shards:100,wins:0,captures:0,steps:0,pos:{x:(10+0.5)*TILE,y:(22+0.5)*TILE},dir:'down',trainerName:'Trainer',trainerGender:'boy'};
+let state={party:[],collection:{},shards:100,wins:0,captures:0,steps:0,pos:{x:(10+0.5)*TILE,y:(22+0.5)*TILE},dir:'down',trainerName:'Trainer',trainerGender:'boy',flags:{}};
 let pendingSetup={trainerName:'Trainer',trainerGender:'boy'}; let battle=null;
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)]; const beastBy=id=>BEASTS.find(b=>b.id===id); const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)); const xpNeed=lv=>30+lv*20; const typeColors={Fire:'#b94b39',Water:'#3678bb',Grass:'#4e8c49',Electric:'#b69525',Flying:'#687fb8',Rock:'#786f67',Neutral:'#596680'};
 function maxHp(m){return Math.round(beastBy(m.id).base[0]*0.7+m.level*5+20)} function statsFor(m){const b=beastBy(m.id).base;return [maxHp(m),...b.slice(1).map(v=>Math.round(v*0.65+m.level*2))]} function knownMoves(m){const set=LEARNSETS[m.id]||[[1,'Scratch']];return set.filter(([lv])=>lv<=m.level).map(x=>x[1]).slice(-4)} function makeMon(id,level){const m={uid:String(Date.now())+Math.random(),id,level,xp:0,hp:0}; m.hp=maxHp(m); return m;}
-function normaliseState(){state.party=Array.isArray(state.party)?state.party:[]; state.collection=state.collection||{}; state.shards=Number.isFinite(+state.shards)?+state.shards:100; state.wins=state.wins||0; state.captures=state.captures||0; state.steps=state.steps||0; state.pos=state.pos||{x:(10+0.5)*TILE,y:(22+0.5)*TILE}; state.dir=state.dir||'down'; state.trainerName=(state.trainerName||'Trainer').slice(0,14); state.trainerGender=state.trainerGender==='girl'?'girl':'boy'; state.party.forEach(m=>{m.level=m.level||1; m.xp=m.xp||0; m.hp=Number.isFinite(m.hp)?clamp(m.hp,0,maxHp(m)):maxHp(m);});}
+function normaliseState(){state.party=Array.isArray(state.party)?state.party:[]; state.collection=state.collection||{}; state.shards=Number.isFinite(+state.shards)?+state.shards:100; state.wins=state.wins||0; state.captures=state.captures||0; state.steps=state.steps||0; state.pos=state.pos||{x:(10+0.5)*TILE,y:(22+0.5)*TILE}; state.dir=state.dir||'down'; state.trainerName=(state.trainerName||'Trainer').slice(0,14); state.trainerGender=state.trainerGender==='girl'?'girl':'boy'; state.flags=state.flags||{}; state.party.forEach(m=>{m.level=m.level||1; m.xp=m.xp||0; m.hp=Number.isFinite(m.hp)?clamp(m.hp,0,maxHp(m)):maxHp(m);});}
 function save(){normaliseState(); localStorage.setItem(SAVE_KEY,JSON.stringify(state)); renderWorldPanels();} function load(){const raw=localStorage.getItem(SAVE_KEY); if(!raw) return false; try{state=JSON.parse(raw); normaliseState(); return true;}catch{return false;}}
 function typeTag(type){return `<span class="typeTag" style="background:${typeColors[type]||typeColors.Neutral}">${type}</span>`}
 function creatureArt(id,size='md'){const b=beastBy(id), path=SPRITES[id]; if(path){const cls=size==='lg'?'sprite-lg':size==='sm'?'sprite-sm':'sprite-md'; return `<img class="creatureImg ${cls}" src="${assetUrl(path)}" alt="${b.name}" loading="eager">`;} const cls=size==='lg'?'':size==='sm'?' sm':' md'; return `<div class="fallbackSprite${cls}">${b.glyph}</div>`;}
 function trainerPreview(gender,size=56){return `<img src="${assetUrl(TRAINER_FRAMES[gender].down[0])}" alt="${gender} trainer" style="width:${size}px;height:${size}px;image-rendering:pixelated">`;}
 function showScreen(id){$$('.screen').forEach(el=>el.classList.remove('active')); const t=$('#'+id); if(t) t.classList.add('active'); $$('.bottomNav button').forEach(btn=>btn.classList.toggle('active',btn.dataset.screen===id)); if(id==='partyScreen') renderParty(); if(id==='dexScreen') renderDex(); if(id==='profileScreen') renderProfile(); if(id==='worldScreen') renderWorldPanels();}
-function renderStarters(){$('#starterChoices').innerHTML=STARTERS.map(id=>{const beast=beastBy(id), temp=makeMon(id,5); return `<div class="card"><div class="spriteWrap">${creatureArt(id,'lg')}</div><h3>${beast.name}</h3>${typeTag(beast.type)}<div class="muted">${beast.role}</div><div class="movesList">Moves: ${knownMoves(temp).join(' · ')}</div><button class="primary big chooseStarter" data-id="${id}">Choose</button></div>`;}).join(''); $$('.chooseStarter').forEach(btn=>btn.onclick=()=>{const mon=makeMon(btn.dataset.id,5); state={party:[mon],collection:{[mon.id]:true},shards:100,wins:0,captures:0,steps:0,pos:{x:(10+0.5)*TILE,y:(22+0.5)*TILE},dir:'down',trainerName:pendingSetup.trainerName||'Trainer',trainerGender:pendingSetup.trainerGender||'boy'}; save(); showScreen('worldScreen');});}
+function renderStarters(){$('#starterChoices').innerHTML=STARTERS.map(id=>{const beast=beastBy(id), temp=makeMon(id,5); return `<div class="card"><div class="spriteWrap">${creatureArt(id,'lg')}</div><h3>${beast.name}</h3>${typeTag(beast.type)}<div class="muted">${beast.role}</div><div class="movesList">Moves: ${knownMoves(temp).join(' · ')}</div><button class="primary big chooseStarter" data-id="${id}">Choose</button></div>`;}).join(''); $$('.chooseStarter').forEach(btn=>btn.onclick=()=>{const mon=makeMon(btn.dataset.id,5); state={party:[mon],collection:{[mon.id]:true},shards:100,wins:0,captures:0,steps:0,pos:{x:(10+0.5)*TILE,y:(22+0.5)*TILE},dir:'down',trainerName:pendingSetup.trainerName||'Trainer',trainerGender:pendingSetup.trainerGender||'boy',flags:{}}; save(); showScreen('worldScreen');});}
 function renderWorldPanels(){if(!$('#shards')) return; $('#shards').textContent=state.shards; $('#partyCount').textContent=`${state.party.length} / 6`; $('#partyMini').innerHTML=state.party.map((m,i)=>`<div class="partyMiniRow"><span>${i===0?'★ ':''}${beastBy(m.id).name} Lv${m.level} · ${m.hp}/${maxHp(m)} HP</span><span>${typeTag(beastBy(m.id).type)}</span></div>`).join(''); $('#trainerBadge').innerHTML=`<span class="badgeName">${state.trainerName}</span>`;}
 function renderParty(){$('#partyList').innerHTML=state.party.map((m,i)=>{const b=beastBy(m.id), pct=clamp(m.xp/xpNeed(m.level)*100,0,100); return `<div class="card partyCard"><div class="head"><div class="lhs">${creatureArt(m.id,'md')}<div><b>${b.name}</b><div>${typeTag(b.type)}</div></div></div><b>Lv ${m.level}</b></div><div class="stats">HP ${m.hp}/${maxHp(m)} · ATK ${statsFor(m)[1]} · DEF ${statsFor(m)[2]} · SP.ATK ${statsFor(m)[3]} · SP.DEF ${statsFor(m)[4]} · SPD ${statsFor(m)[5]}</div><div class="movesList">Moves: ${knownMoves(m).join(' · ')}</div><div class="xpBar"><i style="width:${pct}%"></i></div><small>XP ${m.xp}/${xpNeed(m.level)}</small>${i?`<button class="secondary makeLead" data-i="${i}">Make Lead</button>`:`<div class="movesList"><b>Lead Beast</b></div>`}</div>`;}).join(''); $$('.makeLead').forEach(btn=>btn.onclick=()=>{const i=+btn.dataset.i; const picked=state.party.splice(i,1)[0]; state.party.unshift(picked); save(); renderParty();});}
 function renderDex(){const seen=BEASTS.filter(b=>state.collection[b.id]).length; $('#dexProgress').textContent=`${seen} / ${BEASTS.length} discovered`; $('#dexList').innerHTML=BEASTS.map((b,i)=>{const discovered=!!state.collection[b.id]; return `<div class="card"><div class="spriteWrap">${discovered?creatureArt(b.id,'sm'):`<div class="fallbackSprite sm">?</div>`}</div><small>#${String(i+1).padStart(3,'0')}</small><div><b>${discovered?b.name:'?????'}</b></div><div>${discovered?typeTag(b.type):''}</div><small>${discovered?`${b.rarity} · ${b.role}`:'Undiscovered'}</small></div>`;}).join('');}
@@ -147,12 +159,47 @@ function objectSpriteKey(tx,ty){const o=objAt(tx,ty); if(['hl','hm','hr','wl','w
 function isSolid(tx,ty){const g=groundAt(tx,ty), o=objAt(tx,ty); return SOLID_GROUND.has(g)||SOLID_OBJECT.has(o)} function playerBox(x=state.pos.x,y=state.pos.y){return {x:x-world.bbox.w/2,y:y-world.bbox.h/2,w:world.bbox.w,h:world.bbox.h}} function tilesTouching(box){const left=Math.floor(box.x/TILE), right=Math.floor((box.x+box.w-1)/TILE), top=Math.floor(box.y/TILE), bottom=Math.floor((box.y+box.h-1)/TILE); const out=[]; for(let ty=top; ty<=bottom; ty++) for(let tx=left; tx<=right; tx++) out.push([tx,ty]); return out;} function rectOverlap(a,b){return a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y}
 function collideBox(box){
   if(tilesTouching(box).some(([tx,ty])=>tx<0||ty<0||tx>=MAP_W||ty>=MAP_H||isSolid(tx,ty))) return true;
-  return LARGE_COLLIDERS.some(c=>rectOverlap(box,c));
+  if(LARGE_COLLIDERS.some(c=>rectOverlap(box,c))) return true;
+  return WORLD_NPCS.some(n=>rectOverlap(box,npcBox(n)));
 }
 function currentTile(){return {tx:Math.floor(state.pos.x/TILE), ty:Math.floor(state.pos.y/TILE)}}
 function healParty(say=true){state.party.forEach(m=>m.hp=maxHp(m)); save(); if(say) $('#worldText').textContent='The healing spring restored your party.';}
 function tryMove(dx,dy){const ox=state.pos.x, oy=state.pos.y; if(dx){const nx=ox+dx; const box=playerBox(nx,oy); if(!collideBox(box)) state.pos.x=nx;} if(dy){const ny=oy+dy; const box=playerBox(state.pos.x,ny); if(!collideBox(box)) state.pos.y=ny;}}
-function updateWorld(dt){if(!$('#worldScreen').classList.contains('active')||battle) return; let vx=0,vy=0; if(input.left) vx-=1; if(input.right) vx+=1; if(input.up) vy-=1; if(input.down) vy+=1; const moving=vx!==0||vy!==0; if(moving){const len=Math.hypot(vx,vy)||1; vx/=len; vy/=len; if(Math.abs(vx)>Math.abs(vy)) state.dir=vx>0?'right':'left'; else state.dir=vy>0?'down':'up'; const beforeX=state.pos.x,beforeY=state.pos.y; tryMove(vx*world.playerSpeed*dt,vy*world.playerSpeed*dt); const moved=Math.hypot(state.pos.x-beforeX,state.pos.y-beforeY); if(moved>0){state.steps+=1; world.encounterDistance+=moved; world.frameTimer+=dt; if(world.frameTimer>0.17){world.frame=(world.frame+1)%2; world.frameTimer=0;}}} else {world.frame=0; world.frameTimer=0;} const {tx,ty}=currentTile(); const g=groundAt(tx,ty); const o=objAt(tx,ty); if(HEAL_GROUND.has(g)){healParty(false); $('#worldText').textContent='The healing spring restored your party.';} else if(SAVE_OBJECT.has(o)){save(); $('#worldText').textContent='Your progress was saved at the rune crystal.';} else if(ENCOUNTER_GROUND.has(g)){$('#worldText').textContent='Tall grass rustles... wild Rune Beasts live here.'; if(world.encounterDistance>24 && Math.random()<0.04){world.encounterDistance=0; startBattle(pickEncounter()); return;}} else if(DOOR_OBJECT.has(o)) $('#worldText').textContent='The house is locked for now.'; else if(tx>=40&&tx<=47&&ty>=20&&ty<=25) $('#worldText').textContent='Runevale Bridge leads to Eastbank Quarry.'; else if(tx>=48) $('#worldText').textContent='Eastbank Quarry — wild Rune Beasts gather beyond the bridge.'; else $('#worldText').textContent='Explore Runevale Town.'; $('.areaName').textContent=tx>=48?'Eastbank Quarry':'Runevale Town'; world.camera.x=Math.round(clamp(state.pos.x-canvas.width/2,0,world.width-canvas.width)); world.camera.y=Math.round(clamp(state.pos.y-canvas.height/2,0,world.height-canvas.height));}
+function worldSay(text){const el=$('#worldText'); if(el) el.textContent=text;}
+function distanceToTile(tx,ty){const cx=(tx+.5)*TILE,cy=(ty+.5)*TILE;return Math.hypot(state.pos.x-cx,state.pos.y-cy);}
+function interactWorld(){
+  if(battle||!$('#worldScreen').classList.contains('active')) return;
+  const nearbyNpc=WORLD_NPCS.map(n=>({n,d:distanceToTile(n.tx,n.ty)})).filter(x=>x.d<34).sort((a,b)=>a.d-b.d)[0]?.n;
+  if(nearbyNpc){
+    if(nearbyNpc.id==='rowan'){
+      if(!state.flags.workshopIntro){
+        state.flags.workshopIntro=true; save();
+        worldSay('Rowan: Eastbank Quarry has been restless. Cross the bridge and check the old mine for me.');
+      }else worldSay('Rowan: The bridge east leads straight to the quarry. Keep your party healthy.');
+      return;
+    }
+    if(nearbyNpc.id==='mina'){
+      worldSay('Mina: Tall grass means wild Rune Beasts. The spring by the square restores your whole party.');
+      return;
+    }
+    if(nearbyNpc.id==='quarryman'){
+      worldSay(state.flags.mineCache?'Bram: You found the old shard cache? Rowan will be pleased.':'Bram: The mine entrance is just north. There used to be Rune Shards stored inside.');
+      return;
+    }
+  }
+  const point=INTERACTION_POINTS.map(p=>({p,d:distanceToTile(p.tx,p.ty)})).filter(x=>x.d<40).sort((a,b)=>a.d-b.d)[0]?.p;
+  if(!point){worldSay('There is nothing to inspect here.');return;}
+  if(point.id==='townSign'){worldSay('Runevale Town — West: homes and spring · East: bridge to Eastbank Quarry.');return;}
+  if(point.id==='bridge'){worldSay('Runevale Bridge — the only safe crossing to Eastbank Quarry.');return;}
+  if(point.id==='cave'){worldSay('A cold draught comes from the cave. Something deeper is sealed off for now.');return;}
+  if(point.id==='mine'){
+    if(!state.flags.mineCache){
+      state.flags.mineCache=true; state.shards+=25; save();
+      worldSay('You found an abandoned cache: +25 Rune Shards!');
+    }else worldSay('The old mine cache is empty now.');
+  }
+}
+function updateWorld(dt){if(!$('#worldScreen').classList.contains('active')||battle) return; let vx=0,vy=0; if(input.left) vx-=1; if(input.right) vx+=1; if(input.up) vy-=1; if(input.down) vy+=1; const moving=vx!==0||vy!==0; if(moving){const len=Math.hypot(vx,vy)||1; vx/=len; vy/=len; if(Math.abs(vx)>Math.abs(vy)) state.dir=vx>0?'right':'left'; else state.dir=vy>0?'down':'up'; const beforeX=state.pos.x,beforeY=state.pos.y; tryMove(vx*world.playerSpeed*dt,vy*world.playerSpeed*dt); const moved=Math.hypot(state.pos.x-beforeX,state.pos.y-beforeY); if(moved>0){state.steps+=1; world.encounterDistance+=moved; world.frameTimer+=dt; if(world.frameTimer>0.17){world.frame=(world.frame+1)%2; world.frameTimer=0;}}} else {world.frame=0; world.frameTimer=0;} const {tx,ty}=currentTile(); const g=groundAt(tx,ty); const o=objAt(tx,ty); if(HEAL_GROUND.has(g)){healParty(false); $('#worldText').textContent='The healing spring restored your party.';} else if(SAVE_OBJECT.has(o)){save(); $('#worldText').textContent='Your progress was saved at the rune crystal.';} else if(ENCOUNTER_GROUND.has(g)){$('#worldText').textContent='Tall grass rustles... wild Rune Beasts live here.'; if(world.encounterDistance>24 && Math.random()<0.04){world.encounterDistance=0; startBattle(pickEncounter()); return;}} else if(DOOR_OBJECT.has(o)) $('#worldText').textContent='The house is locked for now.'; else if(tx>=40&&tx<=47&&ty>=20&&ty<=25) $('#worldText').textContent='Runevale Bridge leads to Eastbank Quarry.'; else if(tx>=48) $('#worldText').textContent=state.flags.workshopIntro&&!state.flags.mineCache?'Eastbank Quarry — find the old mine cache for Rowan.':'Eastbank Quarry — wild Rune Beasts gather beyond the bridge.'; else $('#worldText').textContent=!state.flags.workshopIntro?'Explore Runevale Town. Rowan is outside the workshop.':!state.flags.mineCache?'Rowan asked you to investigate the old mine across the bridge.':'Explore Runevale Town.'; $('.areaName').textContent=tx>=48?'Eastbank Quarry':'Runevale Town'; world.camera.x=Math.round(clamp(state.pos.x-canvas.width/2,0,world.width-canvas.width)); world.camera.y=Math.round(clamp(state.pos.y-canvas.height/2,0,world.height-canvas.height));}
 const GROUND_COLOURS={
   '.':'#78b85f',
   'g':'#4f8a46',
@@ -193,7 +240,11 @@ function drawGrassTile(c,x,y,variant=0){
   }
 }
 
-function drawPathTile(c,x,y){
+function sameGroundFamily(tx,ty,family){
+  const g=groundAt(tx,ty);
+  return family.includes(g);
+}
+function drawPathTile(c,x,y,tx,ty){
   c.fillStyle='#c9ad76';
   c.fillRect(x,y,TILE,TILE);
   c.fillStyle='#d8bf8b';
@@ -202,6 +253,12 @@ function drawPathTile(c,x,y){
   c.fillStyle='#b59661';
   c.fillRect(x+6,y+7,1,1);
   c.fillRect(x+13,y+4,1,1);
+  // Only shade the outside edge of a road, never every individual tile.
+  c.fillStyle='#9f804f';
+  if(!sameGroundFamily(tx,ty-1,['p','b'])) c.fillRect(x,y,TILE,1);
+  if(!sameGroundFamily(tx,ty+1,['p','b'])) c.fillRect(x,y+TILE-1,TILE,1);
+  if(!sameGroundFamily(tx-1,ty,['p','b'])) c.fillRect(x,y,1,TILE);
+  if(!sameGroundFamily(tx+1,ty,['p','b'])) c.fillRect(x+TILE-1,y,1,TILE);
 }
 
 function drawSandTile(c,x,y){
@@ -221,6 +278,11 @@ function drawWaterTile(c,x,y,tx,ty){
   c.fillRect(x+8-phase*2,y+12,5,1);
   c.fillStyle='#397ab4';
   c.fillRect(x+5,y+8,4,1);
+  c.fillStyle='#8bc6df';
+  if(!sameGroundFamily(tx,ty-1,['w','W'])) c.fillRect(x,y,TILE,1);
+  if(!sameGroundFamily(tx,ty+1,['w','W'])) c.fillRect(x,y+TILE-1,TILE,1);
+  if(!sameGroundFamily(tx-1,ty,['w','W'])) c.fillRect(x,y,1,TILE);
+  if(!sameGroundFamily(tx+1,ty,['w','W'])) c.fillRect(x+TILE-1,y,1,TILE);
 }
 
 function drawTallGrassTile(c,x,y,tx,ty){
@@ -252,13 +314,13 @@ function drawFlowerTile(c,x,y,alt=false){
 
 function paintBaseTile(c,tx,ty,g){
   const x=tx*TILE, y=ty*TILE;
-  if(g==='p'||g==='b') return drawPathTile(c,x,y);
+  if(g==='p'||g==='b') return drawPathTile(c,x,y,tx,ty);
   if(g==='s') return drawSandTile(c,x,y);
   if(g==='w'||g==='W') return drawWaterTile(c,x,y,tx,ty);
   if(g==='g') return drawTallGrassTile(c,x,y,tx,ty);
   if(g==='f') return drawFlowerTile(c,x,y,false);
   if(g==='F') return drawFlowerTile(c,x,y,true);
-  drawGrassTile(c,x,y,(tx+ty)%2);
+  drawGrassTile(c,x,y,0);
 }
 
 function buildGroundLayer(){
@@ -318,6 +380,17 @@ function drawWorld(){
     ctx.drawImage(img,sx,sy,obj.w,obj.h);
   }
 
+  for(const n of WORLD_NPCS){
+    const nx=Math.round((n.tx+.5)*TILE-world.camera.x);
+    const ny=Math.round((n.ty+.5)*TILE-world.camera.y);
+    if(nx<-16||ny<-24||nx>canvas.width+16||ny>canvas.height+24) continue;
+    ctx.fillStyle='rgba(0,0,0,.22)'; ctx.fillRect(nx-6,ny+7,12,3);
+    ctx.fillStyle=n.hair; ctx.fillRect(nx-5,ny-11,10,5);
+    ctx.fillStyle='#e4bd91'; ctx.fillRect(nx-4,ny-6,8,6);
+    ctx.fillStyle=n.shirt; ctx.fillRect(nx-5,ny,10,8);
+    ctx.fillStyle='#26314b'; ctx.fillRect(nx-5,ny+8,4,7); ctx.fillRect(nx+1,ny+8,4,7);
+  }
+
   const trainerFrames=TRAINER_FRAMES[state.trainerGender]||TRAINER_FRAMES.boy;
   const pImg=images[trainerFrames[state.dir][world.frame]];
   const drawX=Math.round(state.pos.x-world.camera.x-world.drawSize/2);
@@ -369,11 +442,11 @@ function showSwitch(){if(!battle||battle.locked) return; $('#switchMenu').innerH
 function switchTo(i){if(!battle||battle.locked||i===battle.active||state.party[i].hp<=0) return; closeSubmenus(); battle.active=i; renderBattle(); setBattleText(`${beastBy(activeMon().id).name}, you're up!`); setBattleLock(true); battleLater(enemyTurn,600)} function runAway(){if(!battle||battle.locked) return; if(Math.random()<0.85){setBattleText('You escaped safely.'); battle=null; setTimeout(()=>showScreen('worldScreen'),400)} else {setBattleText("Couldn't escape!"); setBattleLock(true); battleLater(enemyTurn,550)}}
 // setup + controls
 function setHeld(dir,val){input[dir]=val} function bindControl(btn){const dir=btn.dataset.dir; const on=e=>{e.preventDefault(); setHeld(dir,true)}; const off=e=>{e.preventDefault(); setHeld(dir,false)}; ['pointerdown','touchstart'].forEach(ev=>btn.addEventListener(ev,on,{passive:false})); ['pointerup','pointerleave','pointercancel','touchend','touchcancel'].forEach(ev=>btn.addEventListener(ev,off,{passive:false}));}
-document.addEventListener('keydown',e=>{if(e.key==='ArrowUp') input.up=true; if(e.key==='ArrowDown') input.down=true; if(e.key==='ArrowLeft') input.left=true; if(e.key==='ArrowRight') input.right=true}); document.addEventListener('keyup',e=>{if(e.key==='ArrowUp') input.up=false; if(e.key==='ArrowDown') input.down=false; if(e.key==='ArrowLeft') input.left=false; if(e.key==='ArrowRight') input.right=false});
+document.addEventListener('keydown',e=>{if(e.key==='ArrowUp') input.up=true; if(e.key==='ArrowDown') input.down=true; if(e.key==='ArrowLeft') input.left=true; if(e.key==='ArrowRight') input.right=true; if((e.key===' '||e.key==='Enter')&&!e.repeat){e.preventDefault();interactWorld();}}); document.addEventListener('keyup',e=>{if(e.key==='ArrowUp') input.up=false; if(e.key==='ArrowDown') input.down=false; if(e.key==='ArrowLeft') input.left=false; if(e.key==='ArrowRight') input.right=false});
 function setChoice(g){pendingSetup.trainerGender=g; $('#boyChoice').classList.toggle('active',g==='boy'); $('#girlChoice').classList.toggle('active',g==='girl')}
 $('#newGameBtn').onclick=()=>{pendingSetup={trainerName:'Trainer',trainerGender:'boy'}; $('#trainerNameInput').value=''; setChoice('boy'); showScreen('setupScreen');}; $('#continueBtn').onclick=()=>showScreen('worldScreen'); $('#boyChoice').onclick=()=>setChoice('boy'); $('#girlChoice').onclick=()=>setChoice('girl'); $('#toStarterBtn').onclick=()=>{const name=$('#trainerNameInput').value.trim(); pendingSetup.trainerName=(name||'Trainer').slice(0,14); renderStarters(); showScreen('starterScreen');};
 $('#movesBtn').onclick=showMoves; $('#captureBtn').onclick=attemptCapture; $('#switchBtn').onclick=showSwitch; $('#runBtn').onclick=runAway; $('#cancelBattleSubmenu').onclick=closeSubmenus; $('#healBtn').onclick=()=>{healParty(false); alert('Party restored.')}; $('#manualSaveBtn').onclick=()=>{save(); alert('Game saved.')}; $('#resetBtn').onclick=()=>{if(confirm('Delete all Rune Beasts progress?')){localStorage.removeItem(SAVE_KEY); location.reload();}};
-$$('[data-screen]').forEach(btn=>btn.onclick=()=>showScreen(btn.dataset.screen)); $$('.control').forEach(bindControl);
+$('[data-screen]').forEach(btn=>btn.onclick=()=>showScreen(btn.dataset.screen)); $('.control').forEach(bindControl); $('#interactBtn').onclick=interactWorld;
 if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{})} buildGroundLayer(); load(); $('#continueBtn').classList.toggle('hidden',!localStorage.getItem(SAVE_KEY)); renderWorldPanels(); requestAnimationFrame(loop);
 
 window.addEventListener('error',e=>{
