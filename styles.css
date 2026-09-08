@@ -51,3 +51,19 @@
 .mapDot{display:inline-block;width:10px;height:10px;border:1px solid #fff;margin-right:4px;vertical-align:-1px}
 .playerDot{background:#fff}.marketDot{background:#e2bd45}.clinicDot{background:#d9646c}.workshopDot{background:#9b6c46}.landmarkDot{background:#6e6253}
 .mapHint{margin-bottom:0}
+
+/* v20 modern cosy pixel-RPG presentation */
+:root{--panel:#183249;--line:#395a6b;--ink:#f7efd8;--muted:#b9c8c7;--gold:#f2d16f;--blue:#4f8fc8;--green:#71c37b}
+.panel{border:2px solid rgba(244,232,198,.9);box-shadow:0 8px 22px rgba(0,0,0,.28);border-radius:10px;background:linear-gradient(180deg,rgba(24,55,73,.97),rgba(18,38,57,.97));padding:12px}
+.canvasFrame{width:368px;max-width:100%;border:2px solid #ead9a8;border-radius:12px;box-shadow:0 10px 24px rgba(0,0,0,.35);background:#173647;overflow:hidden}
+#worldCanvas{width:360px;max-width:100%;height:auto;background:#7fbd68;image-rendering:pixelated}
+.topbar{padding:4px 2px}.areaName{font-size:15px;letter-spacing:.3px}
+.worldText{line-height:1.35;color:#e9e7d8}
+.primary,.secondary,.danger,.backBtn,.control,.trainerChoice{border:2px solid rgba(244,232,198,.9);box-shadow:0 4px 10px rgba(0,0,0,.24);border-radius:8px}
+.interactBtn{border:3px solid #f4e8bf;box-shadow:0 8px 18px rgba(0,0,0,.3)}
+.bottomNav{border-top:2px solid #d8c06a;box-shadow:0 -6px 18px rgba(0,0,0,.25)}
+.bottomNav button{font-size:11px;letter-spacing:.2px}
+@media(min-width:700px){
+  .canvasFrame{width:728px;max-width:728px}
+  #worldCanvas{width:720px;max-width:720px}
+}
