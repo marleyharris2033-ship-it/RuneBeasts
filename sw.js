@@ -1,13 +1,13 @@
-const CACHE='runebeasts-v04';
+const CACHE='runebeasts-v05';
 self.addEventListener('install',e=>{
   self.skipWaiting();
   e.waitUntil(caches.open(CACHE).then(c=>c.addAll([
-    './','index.html','styles.css?v=4','app.js?v=4','manifest.json','icon.svg','route_map.png',
-    'sprites/cindercub.png','sprites/ripplet.png','sprites/spriglet.png','sprites/ashbit.png',
-    'sprites/bubbfin.png','sprites/mossbug.png','sprites/sparkit.png','sprites/breezlet.png',
-    'sprites/pebblit.png','sprites/voltpup.png','sprites/vineape.png','sprites/craggoat.png',
-    'assets/player/down_0.png','assets/player/down_1.png','assets/player/up_0.png','assets/player/up_1.png',
-    'assets/player/left_0.png','assets/player/left_1.png','assets/player/right_0.png','assets/player/right_1.png'
+    './','index.html','styles.css?v=5','app.js?v=5','manifest.json','icon.svg','route_map.png',
+    'cindercub.png','ripplet.png','spriglet.png','ashbit.png',
+    'bubbfin.png','mossbug.png','sparkit.png','breezlet.png',
+    'pebblit.png','voltpup.png','vineape.png','craggoat.png',
+    'down_0.png','down_1.png','up_0.png','up_1.png',
+    'left_0.png','left_1.png','right_0.png','right_1.png'
   ])));
 });
 self.addEventListener('activate',e=>{
