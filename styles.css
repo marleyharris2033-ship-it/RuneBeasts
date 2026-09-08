@@ -27,3 +27,9 @@
   .canvasFrame{width:648px;max-width:648px}
   #worldCanvas{width:640px;max-width:640px}
 }
+
+.worldControls{display:flex;justify-content:center;align-items:flex-end;gap:18px;max-width:360px;margin:10px auto 0}
+.worldControls .dpad{margin:0;flex:1}
+.interactBtn{width:86px;height:86px;border-radius:50%;border:4px solid var(--ink);background:#e7c95f;color:#11182b;font-size:30px;font-weight:900;box-shadow:5px 5px 0 #000;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+.interactBtn small{font-size:10px;color:#11182b;margin-top:4px;letter-spacing:.5px}
+.interactBtn:active{transform:translate(2px,2px);box-shadow:3px 3px 0 #000}
