@@ -378,7 +378,7 @@ function healParty(say=true){state.party.forEach(m=>m.hp=maxHp(m));save();if(say
 function distanceToTile(tx,ty){return Math.hypot(state.pos.x-(tx+.5)*TILE,state.pos.y-(ty+.5)*TILE);}
 
 function areaFor(tx,ty){
-  if(activeInterior)return activeInterior==='clinic'?'Rune Clinic':'Rowan’s Workshop';
+  if(activeInterior)return activeInterior==='clinic'?'Rune Clinic':activeInterior==='inn'?'Moonbell Inn':'Rowan’s Workshop';
   if(tx>=73)return ty>=45?'Eastbank Wilds':'Eastbank Quarry';
   if(ty>=70)return'South Route';
   if(ty<24)return'North Runevale';
@@ -392,7 +392,7 @@ function enterInterior(id,building=null){
     ? {x:(building.doorX+.5)*TILE,y:(building.doorY+1.45)*TILE,dir:'down'}
     : {x:state.pos.x,y:state.pos.y,dir:state.dir};
   activeInterior=id;
-  state.pos={x:10.5*TILE,y:12.1*TILE};
+  state.pos={x:10.5*TILE,y:10.8*TILE};
   state.dir='up';
   world.camera.x=world.camera.y=0;
   world.lastTileKey='';
