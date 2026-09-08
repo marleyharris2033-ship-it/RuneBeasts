@@ -42,3 +42,4 @@
 .bagRow strong{white-space:nowrap;color:var(--gold)}
 #shopScreen .panel:first-of-type{margin-top:8px}
 #mainBattleMenu.actions{grid-template-columns:1fr 1fr}
+.masteryLine{margin-top:7px;padding-top:7px;border-top:1px dashed var(--line);font-size:11px;color:var(--gold)}
