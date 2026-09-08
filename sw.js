@@ -1,4 +1,4 @@
-const CACHE='runebeasts-v18';
+const CACHE='runebeasts-v19';
 const CORE=["./","index.html","styles.css","app.js","assets-beasts.js","assets-tiles.js","assets-objects.js","assets-trainers.js","title_screen.png","rune_beasts_logo.png","app_icon.png","boy_down_0.png","girl_down_0.png","manifest.json"];
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
