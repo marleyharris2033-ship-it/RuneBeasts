@@ -231,7 +231,7 @@ function defaultLearnset(type){
   return byType[type]||[[1,'Scratch']];
 }
 function knownMoves(m){const beast=beastBy(m.id);const set=LEARNSETS[m.id]||defaultLearnset(beast?.type);return set.filter(([lv])=>lv<=m.level).map(x=>x[1]).slice(-4)} function makeMon(id,level){const m={uid:String(Date.now())+Math.random(),id,level,xp:0,hp:0}; m.hp=maxHp(m); return m;}
-function normaliseState(){state.party=Array.isArray(state.party)?state.party:[]; state.collection=state.collection||{}; state.shards=Number.isFinite(+state.shards)?+state.shards:100; state.wins=state.wins||0; state.captures=state.captures||0; state.steps=state.steps||0; state.pos=state.pos||{x:(WORLD_SPAWN.tx+.5)*TILE,y:(WORLD_SPAWN.ty+.5)*TILE}; state.dir=state.dir||'down'; state.trainerName=(state.trainerName||'Trainer').slice(0,14); state.trainerGender=state.trainerGender==='girl'?'girl':'boy'; state.flags=state.flags||{}; state.inventory=state.inventory||{runeSeal:5,greaterSeal:1,tonic:2,reviveRoot:1}; for(const k of Object.keys(SHOP_ITEMS)) state.inventory[k]=Math.max(0,+state.inventory[k]||0); state.captureCounts=state.captureCounts||{}; if(state.flags.worldLayout!==15){state.pos={x:(WORLD_SPAWN.tx+.5)*TILE,y:(WORLD_SPAWN.ty+.5)*TILE};state.flags.worldLayout=15;} state.party.forEach(m=>{m.level=m.level||1; m.xp=m.xp||0; m.hp=Number.isFinite(m.hp)?clamp(m.hp,0,maxHp(m)):maxHp(m);});}
+function normaliseState(){state.party=Array.isArray(state.party)?state.party:[]; state.collection=state.collection||{}; state.shards=Number.isFinite(+state.shards)?+state.shards:100; state.wins=state.wins||0; state.captures=state.captures||0; state.steps=state.steps||0; state.pos=state.pos||{x:(WORLD_SPAWN.tx+.5)*TILE,y:(WORLD_SPAWN.ty+.5)*TILE}; state.dir=state.dir||'down'; state.trainerName=(state.trainerName||'Trainer').slice(0,14); state.trainerGender=state.trainerGender==='girl'?'girl':'boy'; state.flags=state.flags||{}; state.inventory=state.inventory||{runeSeal:5,greaterSeal:1,tonic:2,reviveRoot:1}; for(const k of Object.keys(SHOP_ITEMS)) state.inventory[k]=Math.max(0,+state.inventory[k]||0); state.captureCounts=state.captureCounts||{}; if(state.flags.worldLayout!==20){state.pos={x:(WORLD_SPAWN.tx+.5)*TILE,y:(WORLD_SPAWN.ty+.5)*TILE};state.flags.worldLayout=20;} state.party.forEach(m=>{m.level=m.level||1; m.xp=m.xp||0; m.hp=Number.isFinite(m.hp)?clamp(m.hp,0,maxHp(m)):maxHp(m);});}
 function save(){normaliseState(); localStorage.setItem(SAVE_KEY,JSON.stringify(state)); renderWorldPanels();} function load(){const raw=localStorage.getItem(SAVE_KEY); if(!raw) return false; try{state=JSON.parse(raw); normaliseState(); return true;}catch{return false;}}
 function typeTag(type){return `<span class="typeTag" style="background:${typeColors[type]||typeColors.Neutral}">${type}</span>`}
 const PROC_SPRITES={};
@@ -385,7 +385,7 @@ function healParty(say=true){state.party.forEach(m=>m.hp=maxHp(m));save();if(say
 function distanceToTile(tx,ty){return Math.hypot(state.pos.x-(tx+.5)*TILE,state.pos.y-(ty+.5)*TILE);}
 
 function areaFor(tx,ty){
-  if(activeInterior)return activeInterior==='clinic'?'Rune Clinic':'Rowan’s Workshop';
+  if(activeInterior)return activeInterior==='clinic'?'Rune Clinic':activeInterior==='inn'?'Moonbell Inn':'Rowan’s Workshop';
   if(tx>=73)return ty>=45?'Eastbank Wilds':'Eastbank Quarry';
   if(ty>=70)return'South Route';
   if(ty<24)return'North Runevale';
@@ -393,24 +393,45 @@ function areaFor(tx,ty){
   return'Runevale Town';
 }
 
-function enterInterior(id){
+function enterInterior(id,building=null){
   if(activeInterior)return;
-  returnPos={x:state.pos.x,y:state.pos.y,dir:state.dir};
+  if(building){
+    returnPos={x:(building.doorX+.5)*TILE,y:(building.doorY+1.55)*TILE,dir:'down'};
+  }else{
+    returnPos={x:state.pos.x,y:state.pos.y+TILE,dir:'down'};
+  }
   activeInterior=id;
-  state.pos={x:10.5*TILE,y:12.5*TILE};
+  state.pos={x:10.5*TILE,y:10.5*TILE};
   state.dir='up';
   world.camera.x=world.camera.y=0;
   world.lastTileKey='';
-  worldSay(id==='clinic'?'Rune Clinic — talk to the attendant or use the counter.':'Rowan’s Workshop — maps and Rune tools line the walls.',3200);
+  const text=id==='clinic'?'Rune Clinic — walk to the counter for care.'
+    :id==='inn'?'Moonbell Inn — a warm place to rest.'
+    :'Rowan’s Workshop — maps and Rune tools line the walls.';
+  worldSay(text,2800);
 }
 function exitInterior(){
   if(!activeInterior||!returnPos)return;
   activeInterior=null;
   state.pos={x:returnPos.x,y:returnPos.y};
-  state.dir='down';
+  state.dir=returnPos.dir||'down';
   returnPos=null;
   world.lastTileKey='';
-  worldSay('Back outside in Runevale.',1800);
+  worldSay('Back outside in Runevale.',1500);
+}
+function buildingDoorAt(tx,ty){
+  return BUILDINGS.find(b=>b.enterable&&b.doorX===tx&&b.doorY===ty)||null;
+}
+function autoEnterBuilding(b){
+  if(!b)return false;
+  if(b.interior==='shop'){
+    state.pos={x:(b.doorX+.5)*TILE,y:(b.doorY+1.55)*TILE};
+    world.lastTileKey=`${b.doorX},${b.doorY}`;
+    showScreen('shopScreen');renderShop();
+    return true;
+  }
+  enterInterior(b.interior,b);
+  return true;
 }
 
 function nearestBuildingDoor(){
@@ -452,10 +473,7 @@ function interactWorld(){
   }
 
   const building=nearestBuildingDoor();
-  if(building){
-    if(building.enterable){if(building.interior==='shop'){showScreen('shopScreen');renderShop();return;} enterInterior(building.interior);return;}
-    worldSay(building.name+' — the door is closed for now.');return;
-  }
+  if(building&&!building.enterable){worldSay(building.name+' — the door is closed for now.');return;}
 
   const landmark=nearestLandmark();
   if(landmark){
@@ -478,7 +496,7 @@ function interactWorld(){
 
 function passiveWorldMessage(tx,ty){
   if(performance.now()<world.messageUntil)return;
-  if(activeInterior){$('#worldText').textContent=activeInterior==='clinic'?'Rune Clinic — A to use the counter, or move to the doorway to leave.':'Rowan’s Workshop — A near the counter to talk, or move to the doorway to leave.';return;}
+  if(activeInterior){$('#worldText').textContent=activeInterior==='clinic'?'Rune Clinic — approach the counter for care.':activeInterior==='inn'?'Moonbell Inn — walk to the doorway to leave.':'Rowan’s Workshop — approach the counter to talk with Rowan.';return;}
   const g=groundAt(tx,ty);
   if(g==='g'){$('#worldText').textContent='Tall grass rustles nearby — wild Rune Beasts live here.';return;}
   if(tx>=73){
@@ -506,6 +524,7 @@ function updateWorld(dt){
   $('.areaName').textContent=areaFor(tx,ty);
 
   if(activeInterior){
+    if(ty>=13&&tx>=8&&tx<=12){exitInterior();return;}
     passiveWorldMessage(tx,ty);
     return;
   }
@@ -513,6 +532,8 @@ function updateWorld(dt){
   const tileKey=tx+','+ty;
   if(tileKey!==world.lastTileKey){
     world.lastTileKey=tileKey;
+    const door=buildingDoorAt(tx,ty);
+    if(door&&autoEnterBuilding(door))return;
     const g=groundAt(tx,ty),o=objAt(tx,ty);
     if(HEAL_GROUND.has(g)){healParty(false);worldSay('The Rune fountain restored your party.',1800);}
     else if(SAVE_OBJECT.has(o)){save();worldSay('Progress saved at the Rune crystal.',1800);}
