@@ -147,36 +147,40 @@ const TILESET={
 'wr':'tile_grass_v2.png'
 };
 const BUILDINGS=[
-  {id:'guild',sign:'MARKET',name:'Rune Market',tx:24,ty:8,w:11,h:8,doorX:29,doorY:15,roof:'#a94e42',roof2:'#d06a51',wall:'#e8cf9a',trim:'#744438',enterable:true,interior:'shop'},
-  {id:'homeA',sign:'HOME',name:'Maple House',tx:12,ty:11,w:9,h:7,doorX:16,doorY:17,roof:'#b65445',roof2:'#da7157',wall:'#ead6a7',trim:'#754536',enterable:false},
-  {id:'homeB',sign:'HOME',name:'Willow House',tx:40,ty:11,w:9,h:7,doorX:44,doorY:17,roof:'#4e728f',roof2:'#6f98b5',wall:'#e6d4aa',trim:'#435264',enterable:false},
-  {id:'workshop',sign:'WORKSHOP',name:'Rowan’s Workshop',tx:50,ty:28,w:10,h:8,doorX:55,doorY:35,roof:'#7c5a3e',roof2:'#a17b58',wall:'#d9c39c',trim:'#594332',enterable:true,interior:'workshop'},
-  {id:'clinic',sign:'CLINIC',name:'Rune Clinic',tx:10,ty:44,w:10,h:8,doorX:15,doorY:51,roof:'#b64c52',roof2:'#db6f72',wall:'#f0dbb4',trim:'#70464a',enterable:true,interior:'clinic'},
-  {id:'inn',sign:'INN',name:'Moonbell Inn',tx:43,ty:45,w:10,h:8,doorX:48,doorY:52,roof:'#5b5f91',roof2:'#7c82b0',wall:'#e6d1a8',trim:'#444767',enterable:false}
+  {id:'guild',sign:'MARKET',name:'Rune Market',tx:10,ty:10,w:14,h:11,doorX:17,doorY:20,roof:'#b85643',roof2:'#d97a58',wall:'#efd6a5',trim:'#6f4135',enterable:true,interior:'shop',awning:true},
+  {id:'inn',sign:'INN',name:'Moonbell Inn',tx:40,ty:9,w:14,h:10,doorX:47,doorY:18,roof:'#b65042',roof2:'#da7656',wall:'#ead1a4',trim:'#684338',enterable:true,interior:'inn',chimney:true},
+  {id:'clinic',sign:'CLINIC',name:'Rune Clinic',tx:9,ty:44,w:13,h:10,doorX:15,doorY:53,roof:'#4f708d',roof2:'#7898b0',wall:'#f0dbb4',trim:'#465263',enterable:true,interior:'clinic',medical:true},
+  {id:'workshop',sign:'WORKSHOP',name:'Rowan’s Workshop',tx:51,ty:44,w:13,h:10,doorX:58,doorY:53,roof:'#4d647a',roof2:'#748a9d',wall:'#dec49b',trim:'#493f39',enterable:true,interior:'workshop',chimney:true},
+  {id:'homeA',sign:'HOME',name:'Maple House',tx:10,ty:63,w:10,h:8,doorX:15,doorY:70,roof:'#ad5444',roof2:'#d07057',wall:'#ead5aa',trim:'#70473a',enterable:false},
+  {id:'homeB',sign:'HOME',name:'Willow House',tx:47,ty:63,w:10,h:8,doorX:52,doorY:70,roof:'#53738c',roof2:'#7899ae',wall:'#e6d3aa',trim:'#445366',enterable:false}
 ];
 
 const LANDMARKS=[
-  {id:'mine',name:'Old Eastbank Mine',tx:84,ty:17,w:15,h:9,doorX:91,doorY:25,type:'mine'},
-  {id:'cave',name:'Whisper Cave',tx:98,ty:57,w:14,h:8,doorX:105,doorY:64,type:'cave'}
+  {id:'mine',name:'Old Eastbank Mine',tx:85,ty:14,w:16,h:10,doorX:93,doorY:23,type:'mine'},
+  {id:'cave',name:'Whisper Cave',tx:99,ty:56,w:14,h:9,doorX:106,doorY:64,type:'cave'}
 ];
 
 const WORLD_BLOCKED=makeGrid(false);
 function blockRect(tx,ty,w,h){for(let y=ty;y<ty+h;y++)for(let x=tx;x<tx+w;x++)if(x>=0&&y>=0&&x<MAP_W&&y<MAP_H)WORLD_BLOCKED[y][x]=true;}
-BUILDINGS.forEach(b=>blockRect(b.tx,b.ty,b.w,b.h));
+BUILDINGS.forEach(b=>{
+  blockRect(b.tx,b.ty,b.w,b.h);
+  // Door and the threshold immediately outside it are walkable.
+  if(WORLD_BLOCKED[b.doorY])WORLD_BLOCKED[b.doorY][b.doorX]=false;
+});
 LANDMARKS.forEach(b=>blockRect(b.tx,b.ty,b.w,b.h));
-blockRect(37,35,3,3); // Rune fountain basin
+blockRect(36,36,5,5); // fountain basin
 
 const WORLD_NPCS=[
-  {id:'rowan',name:'Rowan',tx:55,ty:38,shirt:'#6c4d9e',hair:'#5b3b25'},
-  {id:'mina',name:'Mina',tx:34,ty:43,shirt:'#3f7fb5',hair:'#7b4b2a'},
+  {id:'rowan',name:'Rowan',tx:58,ty:56,shirt:'#6c4d9e',hair:'#5b3b25'},
+  {id:'mina',name:'Mina',tx:26,ty:43,shirt:'#3f7fb5',hair:'#7b4b2a'},
   {id:'quarryman',name:'Bram',tx:84,ty:43,shirt:'#8a6336',hair:'#403126'}
 ];
 const INTERACTION_POINTS=[
-  {id:'townSign',tx:33,ty:66},
-  {id:'bridge',tx:69,ty:39},
-  {id:'spring',tx:38,ty:36},
-  {id:'mine',tx:91,ty:25},
-  {id:'cave',tx:105,ty:64}
+  {id:'townSign',tx:37,ty:69},
+  {id:'bridge',tx:72,ty:39},
+  {id:'spring',tx:38,ty:38},
+  {id:'mine',tx:93,ty:23},
+  {id:'cave',tx:106,ty:64}
 ];
 function npcBox(n){return {x:n.tx*TILE+3,y:n.ty*TILE+2,w:10,h:12};}
 
