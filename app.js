@@ -187,253 +187,368 @@ function renderParty(){$('#partyList').innerHTML=state.party.map((m,i)=>{const b
 function renderDex(){const seen=BEASTS.filter(b=>state.collection[b.id]).length; $('#dexProgress').textContent=`${seen} / ${BEASTS.length} discovered`; $('#dexList').innerHTML=BEASTS.map((b,i)=>{const discovered=!!state.collection[b.id]; return `<div class="card"><div class="spriteWrap">${discovered?creatureArt(b.id,'sm'):`<div class="fallbackSprite sm">?</div>`}</div><small>#${String(i+1).padStart(3,'0')}</small><div><b>${discovered?b.name:'?????'}</b></div><div>${discovered?typeTag(b.type):''}</div><small>${discovered?`${b.rarity} · ${b.role}`:'Undiscovered'}</small></div>`;}).join('');}
 function renderProfile(){$('#profileSprite').innerHTML=trainerPreview(state.trainerGender,56); $('#profileName').textContent=state.trainerName; $('#profileGender').textContent=state.trainerGender==='girl'?'Girl trainer':'Boy trainer'; $('#saveStats').innerHTML=`<p>Wins: <b>${state.wins}</b></p><p>Captured: <b>${state.captures}</b></p><p>Discovered: <b>${Object.keys(state.collection).length}/${BEASTS.length}</b></p><p>Steps: <b>${state.steps}</b></p><p>Rune Shards: <b>${state.shards}</b></p>`;}
 // world
-const canvas=document.getElementById('worldCanvas'); const ctx=canvas.getContext('2d'); ctx.imageSmoothingEnabled=false; const world={width:MAP_W*TILE,height:MAP_H*TILE,playerSpeed:70,drawSize:32,bbox:{w:10,h:12},camera:{x:0,y:0},frame:0,frameTimer:0,encounterDistance:0,lastTime:0}; const input={up:false,down:false,left:false,right:false}; const images={}; function loadImg(src){const img=new Image(); img.src=assetUrl(src); images[src]=img; return img;} function loadTileAsset(val){if(Array.isArray(val)) val.forEach(loadImg); else loadImg(val);} Object.values(TILESET).forEach(loadTileAsset); Object.values(LARGE_OBJECTS).forEach(o=>loadImg(o.src)); Object.values(SPRITES).forEach(loadImg); Object.values(TRAINER_FRAMES).forEach(v=>Object.values(v).flat().forEach(loadImg));
-function groundAt(tx,ty){return (GROUND[ty]&&GROUND[ty][tx])?GROUND[ty][tx]:'W'} function objAt(tx,ty){return (OBJECTS[ty]&&OBJECTS[ty][tx]!==undefined)?OBJECTS[ty][tx]:''}
-function groundSpriteKey(tx,ty){const g=groundAt(tx,ty); const v=TILESET[g]; if(Array.isArray(v)) return v[(tx*3+ty*5)%v.length]; return v;}
-function objectSpriteKey(tx,ty){const o=objAt(tx,ty); if(['hl','hm','hr','wl','wd','wr'].includes(o)) return null; return TILESET[o]||null;}
-function isSolid(tx,ty){const g=groundAt(tx,ty), o=objAt(tx,ty); return SOLID_GROUND.has(g)||SOLID_OBJECT.has(o)} function playerBox(x=state.pos.x,y=state.pos.y){return {x:x-world.bbox.w/2,y:y-world.bbox.h/2,w:world.bbox.w,h:world.bbox.h}} function tilesTouching(box){const left=Math.floor(box.x/TILE), right=Math.floor((box.x+box.w-1)/TILE), top=Math.floor(box.y/TILE), bottom=Math.floor((box.y+box.h-1)/TILE); const out=[]; for(let ty=top; ty<=bottom; ty++) for(let tx=left; tx<=right; tx++) out.push([tx,ty]); return out;} function rectOverlap(a,b){return a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y}
+const canvas=document.getElementById('worldCanvas');
+const ctx=canvas.getContext('2d',{alpha:false});
+ctx.imageSmoothingEnabled=false;
+
+const world={
+  width:MAP_W*TILE,height:MAP_H*TILE,playerSpeed:74,drawSize:32,bbox:{w:10,h:11},
+  camera:{x:0,y:0},frame:0,frameTimer:0,encounterDistance:0,lastTime:0,
+  messageUntil:0,lastTileKey:''
+};
+const input={up:false,down:false,left:false,right:false};
+const images={};
+let activeInterior=null;
+let returnPos=null;
+
+function loadImg(src){const img=new Image();img.src=assetUrl(src);images[src]=img;return img;}
+function loadTileAsset(val){if(Array.isArray(val))val.forEach(loadImg);else loadImg(val);}
+Object.values(TILESET).forEach(loadTileAsset);
+Object.values(SPRITES).forEach(loadImg);
+Object.values(TRAINER_FRAMES).forEach(v=>Object.values(v).flat().forEach(loadImg));
+
+function groundAt(tx,ty){return GROUND[ty]&&GROUND[ty][tx]?GROUND[ty][tx]:'W';}
+function objAt(tx,ty){return OBJECTS[ty]&&OBJECTS[ty][tx]!==undefined?OBJECTS[ty][tx]:'';}
+function objectSpriteKey(tx,ty){const o=objAt(tx,ty);return TILESET[o]||null;}
+function playerBox(x=state.pos.x,y=state.pos.y){return{x:x-world.bbox.w/2,y:y-world.bbox.h/2,w:world.bbox.w,h:world.bbox.h};}
+function tilesTouching(box){
+  const left=Math.floor(box.x/TILE),right=Math.floor((box.x+box.w-1)/TILE);
+  const top=Math.floor(box.y/TILE),bottom=Math.floor((box.y+box.h-1)/TILE);
+  const out=[];for(let ty=top;ty<=bottom;ty++)for(let tx=left;tx<=right;tx++)out.push([tx,ty]);return out;
+}
+function rectOverlap(a,b){return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;}
+function npcBox(n){return{x:n.tx*TILE+3,y:n.ty*TILE+2,w:10,h:12};}
+
+function isWorldSolid(tx,ty){
+  if(tx<0||ty<0||tx>=MAP_W||ty>=MAP_H)return true;
+  if(SOLID_GROUND.has(groundAt(tx,ty)))return true;
+  if(WORLD_BLOCKED[ty]&&WORLD_BLOCKED[ty][tx])return true;
+  if(SOLID_OBJECT.has(objAt(tx,ty)))return true;
+  return false;
+}
+function interiorSolid(box){
+  const maxX=20*TILE,maxY=15*TILE;
+  if(box.x<16||box.y<16||box.x+box.w>maxX-16||box.y+box.h>maxY-10)return true;
+  const furniture=[
+    {x:3*TILE,y:3*TILE,w:14*TILE,h:2*TILE},
+    {x:2*TILE,y:7*TILE,w:3*TILE,h:3*TILE},
+    {x:15*TILE,y:7*TILE,w:3*TILE,h:3*TILE}
+  ];
+  return furniture.some(f=>rectOverlap(box,f));
+}
 function collideBox(box){
-  if(tilesTouching(box).some(([tx,ty])=>tx<0||ty<0||tx>=MAP_W||ty>=MAP_H||isSolid(tx,ty))) return true;
-  if(LARGE_COLLIDERS.some(c=>rectOverlap(box,c))) return true;
+  if(activeInterior)return interiorSolid(box);
+  if(tilesTouching(box).some(([tx,ty])=>isWorldSolid(tx,ty)))return true;
   return WORLD_NPCS.some(n=>rectOverlap(box,npcBox(n)));
 }
-function currentTile(){return {tx:Math.floor(state.pos.x/TILE), ty:Math.floor(state.pos.y/TILE)}}
-function healParty(say=true){state.party.forEach(m=>m.hp=maxHp(m)); save(); if(say) $('#worldText').textContent='The healing spring restored your party.';}
-function tryMove(dx,dy){const ox=state.pos.x, oy=state.pos.y; if(dx){const nx=ox+dx; const box=playerBox(nx,oy); if(!collideBox(box)) state.pos.x=nx;} if(dy){const ny=oy+dy; const box=playerBox(state.pos.x,ny); if(!collideBox(box)) state.pos.y=ny;}}
-function worldSay(text){const el=$('#worldText'); if(el) el.textContent=text;}
-function distanceToTile(tx,ty){const cx=(tx+.5)*TILE,cy=(ty+.5)*TILE;return Math.hypot(state.pos.x-cx,state.pos.y-cy);}
+function tryMove(dx,dy){
+  const ox=state.pos.x,oy=state.pos.y;
+  if(dx){const nx=ox+dx;if(!collideBox(playerBox(nx,oy)))state.pos.x=nx;}
+  if(dy){const ny=oy+dy;if(!collideBox(playerBox(state.pos.x,ny)))state.pos.y=ny;}
+}
+function currentTile(){return{tx:Math.floor(state.pos.x/TILE),ty:Math.floor(state.pos.y/TILE)};}
+function worldSay(text,ms=2600){const el=$('#worldText');if(el)el.textContent=text;world.messageUntil=performance.now()+ms;}
+function healParty(say=true){state.party.forEach(m=>m.hp=maxHp(m));save();if(say)worldSay('Your party was fully restored.');}
+function distanceToTile(tx,ty){return Math.hypot(state.pos.x-(tx+.5)*TILE,state.pos.y-(ty+.5)*TILE);}
+
+function areaFor(tx,ty){
+  if(activeInterior)return activeInterior==='clinic'?'Rune Clinic':'Rowan’s Workshop';
+  if(tx>=73)return ty>=45?'Eastbank Wilds':'Eastbank Quarry';
+  if(ty>=70)return'South Route';
+  if(ty<24)return'North Runevale';
+  if(ty>52)return'South Runevale';
+  return'Runevale Town';
+}
+
+function enterInterior(id){
+  if(activeInterior)return;
+  returnPos={x:state.pos.x,y:state.pos.y,dir:state.dir};
+  activeInterior=id;
+  state.pos={x:10.5*TILE,y:12.5*TILE};
+  state.dir='up';
+  world.camera.x=world.camera.y=0;
+  world.lastTileKey='';
+  worldSay(id==='clinic'?'Rune Clinic — talk to the attendant or use the counter.':'Rowan’s Workshop — maps and Rune tools line the walls.',3200);
+}
+function exitInterior(){
+  if(!activeInterior||!returnPos)return;
+  activeInterior=null;
+  state.pos={x:returnPos.x,y:returnPos.y};
+  state.dir='down';
+  returnPos=null;
+  world.lastTileKey='';
+  worldSay('Back outside in Runevale.',1800);
+}
+
+function nearestBuildingDoor(){
+  return BUILDINGS.map(b=>({b,d:distanceToTile(b.doorX,b.doorY)})).filter(x=>x.d<34).sort((a,b)=>a.d-b.d)[0]?.b||null;
+}
+function nearestLandmark(){
+  return LANDMARKS.map(l=>({l,d:distanceToTile(l.doorX,l.doorY)})).filter(x=>x.d<40).sort((a,b)=>a.d-b.d)[0]?.l||null;
+}
+
 function interactWorld(){
-  if(battle||!$('#worldScreen').classList.contains('active')) return;
+  if(battle||!$('#worldScreen').classList.contains('active'))return;
+
+  if(activeInterior){
+    const {tx,ty}=currentTile();
+    if(ty>=12&&tx>=8&&tx<=12){exitInterior();return;}
+    if(activeInterior==='clinic'){
+      if(ty<=6){healParty(false);worldSay('Clinic attendant: Your Rune Beasts are fighting fit again.');return;}
+      worldSay('A tidy clinic with shelves of tonics and field notes.');return;
+    }
+    if(activeInterior==='workshop'){
+      if(ty<=6){
+        if(!state.flags.workshopIntro){state.flags.workshopIntro=true;save();}
+        worldSay('Rowan: Eastbank is beyond the river. Check the old mine when you are ready.');return;
+      }
+      worldSay('Tools, maps and half-finished Rune devices cover the benches.');return;
+    }
+  }
+
   const nearbyNpc=WORLD_NPCS.map(n=>({n,d:distanceToTile(n.tx,n.ty)})).filter(x=>x.d<34).sort((a,b)=>a.d-b.d)[0]?.n;
   if(nearbyNpc){
     if(nearbyNpc.id==='rowan'){
-      if(!state.flags.workshopIntro){
-        state.flags.workshopIntro=true; save();
-        worldSay('Rowan: Eastbank Quarry has been restless. Cross the bridge and check the old mine for me.');
-      }else worldSay('Rowan: The bridge east leads straight to the quarry. Keep your party healthy.');
+      if(!state.flags.workshopIntro){state.flags.workshopIntro=true;save();worldSay('Rowan: Cross Runevale Bridge and inspect the old Eastbank Mine. Bram will point you the right way.',4200);}
+      else if(!state.flags.mineCache)worldSay('Rowan: Follow the east road, cross the bridge, then head north at the quarry fork.');
+      else worldSay('Rowan: Good work. The shards you recovered should help with binding new Rune Beasts.');
       return;
     }
-    if(nearbyNpc.id==='mina'){
-      worldSay('Mina: Tall grass means wild Rune Beasts. The spring by the square restores your whole party.');
-      return;
-    }
-    if(nearbyNpc.id==='quarryman'){
-      worldSay(state.flags.mineCache?'Bram: You found the old shard cache? Rowan will be pleased.':'Bram: The mine entrance is just north. There used to be Rune Shards stored inside.');
-      return;
-    }
+    if(nearbyNpc.id==='mina'){worldSay('Mina: The clinic is south-west. The fountain in the square can restore your party too.');return;}
+    if(nearbyNpc.id==='quarryman'){worldSay(state.flags.mineCache?'Bram: Heard you found the old cache. Watch yourself near Whisper Cave.':'Bram: Mine entrance is up the north path. Wild Rune Beasts get stronger deeper east.');return;}
   }
-  const point=INTERACTION_POINTS.map(p=>({p,d:distanceToTile(p.tx,p.ty)})).filter(x=>x.d<40).sort((a,b)=>a.d-b.d)[0]?.p;
-  if(!point){worldSay('There is nothing to inspect here.');return;}
-  if(point.id==='townSign'){worldSay('Runevale Town — West: homes and spring · East: bridge to Eastbank Quarry.');return;}
-  if(point.id==='bridge'){worldSay('Runevale Bridge — the only safe crossing to Eastbank Quarry.');return;}
-  if(point.id==='cave'){worldSay('A cold draught comes from the cave. Something deeper is sealed off for now.');return;}
-  if(point.id==='mine'){
-    if(!state.flags.mineCache){
-      state.flags.mineCache=true; state.shards+=25; save();
-      worldSay('You found an abandoned cache: +25 Rune Shards!');
-    }else worldSay('The old mine cache is empty now.');
-  }
-}
-function updateWorld(dt){if(!$('#worldScreen').classList.contains('active')||battle) return; let vx=0,vy=0; if(input.left) vx-=1; if(input.right) vx+=1; if(input.up) vy-=1; if(input.down) vy+=1; const moving=vx!==0||vy!==0; if(moving){const len=Math.hypot(vx,vy)||1; vx/=len; vy/=len; if(Math.abs(vx)>Math.abs(vy)) state.dir=vx>0?'right':'left'; else state.dir=vy>0?'down':'up'; const beforeX=state.pos.x,beforeY=state.pos.y; tryMove(vx*world.playerSpeed*dt,vy*world.playerSpeed*dt); const moved=Math.hypot(state.pos.x-beforeX,state.pos.y-beforeY); if(moved>0){state.steps+=1; world.encounterDistance+=moved; world.frameTimer+=dt; if(world.frameTimer>0.17){world.frame=(world.frame+1)%2; world.frameTimer=0;}}} else {world.frame=0; world.frameTimer=0;} const {tx,ty}=currentTile(); const g=groundAt(tx,ty); const o=objAt(tx,ty); if(HEAL_GROUND.has(g)){healParty(false); $('#worldText').textContent='The healing spring restored your party.';} else if(SAVE_OBJECT.has(o)){save(); $('#worldText').textContent='Your progress was saved at the rune crystal.';} else if(ENCOUNTER_GROUND.has(g)){$('#worldText').textContent='Tall grass rustles... wild Rune Beasts live here.'; if(world.encounterDistance>24 && Math.random()<0.04){world.encounterDistance=0; startBattle(pickEncounter()); return;}} else if(DOOR_OBJECT.has(o)) $('#worldText').textContent='The house is locked for now.'; else if(tx>=40&&tx<=47&&ty>=20&&ty<=25) $('#worldText').textContent='Runevale Bridge leads to Eastbank Quarry.'; else if(tx>=48) $('#worldText').textContent=state.flags.workshopIntro&&!state.flags.mineCache?'Eastbank Quarry — find the old mine cache for Rowan.':'Eastbank Quarry — wild Rune Beasts gather beyond the bridge.'; else $('#worldText').textContent=!state.flags.workshopIntro?'Explore Runevale Town. Rowan is outside the workshop.':!state.flags.mineCache?'Rowan asked you to investigate the old mine across the bridge.':'Explore Runevale Town.'; $('.areaName').textContent=tx>=48?'Eastbank Quarry':'Runevale Town'; world.camera.x=Math.round(clamp(state.pos.x-canvas.width/2,0,world.width-canvas.width)); world.camera.y=Math.round(clamp(state.pos.y-canvas.height/2,0,world.height-canvas.height));}
-const GROUND_COLOURS={
-  '.':'#78b85f',
-  'g':'#4f8a46',
-  'p':'#c9ad76',
-  'w':'#4c8fc9',
-  'W':'#4c8fc9',
-  'b':'#b58a55',
-  's':'#d6bd82',
-  'S':'#78b85f',
-  'f':'#78b85f',
-  'F':'#78b85f'
-};
 
-// Seam-free Pokémon-style base terrain.
-// Ground is drawn procedurally into one continuous native-resolution bitmap.
-// Object artwork (houses, trees, bridge, mine etc.) remains layered on top.
+  const building=nearestBuildingDoor();
+  if(building){
+    if(building.enterable){enterInterior(building.interior);return;}
+    worldSay(building.name+' — the door is closed for now.');return;
+  }
+
+  const landmark=nearestLandmark();
+  if(landmark){
+    if(landmark.id==='mine'){
+      if(!state.flags.mineCache){state.flags.mineCache=true;state.shards+=25;save();worldSay('Inside the mine entrance you find an abandoned cache: +25 Rune Shards!',4000);}
+      else worldSay('Old Eastbank Mine — the shard cache is empty now.');
+      return;
+    }
+    if(landmark.id==='cave'){worldSay('Whisper Cave — a strange pulse comes from deeper inside. The passage is sealed for now.',3600);return;}
+  }
+
+  const point=INTERACTION_POINTS.map(p=>({p,d:distanceToTile(p.tx,p.ty)})).filter(x=>x.d<38).sort((a,b)=>a.d-b.d)[0]?.p;
+  if(point){
+    if(point.id==='townSign'){worldSay('Runevale: North — Rune Lodge · West — Clinic · East — Bridge and Quarry · South — Route Gate.');return;}
+    if(point.id==='bridge'){worldSay('Runevale Bridge — the river crossing to Eastbank.');return;}
+    if(point.id==='spring'){healParty(false);worldSay('The Rune fountain restores your whole party.');return;}
+  }
+  worldSay('Nothing nearby needs your attention.',1300);
+}
+
+function passiveWorldMessage(tx,ty){
+  if(performance.now()<world.messageUntil)return;
+  const g=groundAt(tx,ty);
+  if(g==='g'){$('#worldText').textContent='Tall grass rustles nearby — wild Rune Beasts live here.';return;}
+  if(tx>=73){
+    $('#worldText').textContent=state.flags.workshopIntro&&!state.flags.mineCache?'Eastbank — search the old mine for Rowan.':'Explore Eastbank’s quarry paths and wild grass.';
+    return;
+  }
+  $('#worldText').textContent=!state.flags.workshopIntro?'Explore Runevale. Rowan is outside the workshop east of the square.':!state.flags.mineCache?'Rowan asked you to investigate the mine beyond the bridge.':'Explore Runevale Town.';
+}
+
+function updateWorld(dt){
+  if(!$('#worldScreen').classList.contains('active')||battle)return;
+  let vx=0,vy=0;
+  if(input.left)vx-=1;if(input.right)vx+=1;if(input.up)vy-=1;if(input.down)vy+=1;
+  const moving=vx!==0||vy!==0;
+  if(moving){
+    const len=Math.hypot(vx,vy)||1;vx/=len;vy/=len;
+    if(Math.abs(vx)>Math.abs(vy))state.dir=vx>0?'right':'left';else state.dir=vy>0?'down':'up';
+    const bx=state.pos.x,by=state.pos.y;
+    tryMove(vx*world.playerSpeed*dt,vy*world.playerSpeed*dt);
+    const moved=Math.hypot(state.pos.x-bx,state.pos.y-by);
+    if(moved>0){state.steps+=1;world.encounterDistance+=moved;world.frameTimer+=dt;if(world.frameTimer>.17){world.frame=(world.frame+1)%2;world.frameTimer=0;}}
+  }else{world.frame=0;world.frameTimer=0;}
+
+  const {tx,ty}=currentTile();
+  $('.areaName').textContent=areaFor(tx,ty);
+
+  if(activeInterior){
+    passiveWorldMessage(tx,ty);
+    return;
+  }
+
+  const tileKey=tx+','+ty;
+  if(tileKey!==world.lastTileKey){
+    world.lastTileKey=tileKey;
+    const g=groundAt(tx,ty),o=objAt(tx,ty);
+    if(HEAL_GROUND.has(g)){healParty(false);worldSay('The Rune fountain restored your party.',1800);}
+    else if(SAVE_OBJECT.has(o)){save();worldSay('Progress saved at the Rune crystal.',1800);}
+    else if(ENCOUNTER_GROUND.has(g)&&world.encounterDistance>30&&Math.random()<.10){world.encounterDistance=0;startBattle(pickEncounter());return;}
+  }
+  passiveWorldMessage(tx,ty);
+
+  world.camera.x=Math.round(clamp(state.pos.x-canvas.width/2,0,world.width-canvas.width));
+  world.camera.y=Math.round(clamp(state.pos.y-canvas.height/2,0,world.height-canvas.height));
+}
+
+// Seam-free continuous ground bitmap.
+const GROUND_COLOURS={'.':'#78b85f','g':'#4f8a46','p':'#c9ad76','w':'#4c8fc9','W':'#4c8fc9','b':'#9c7245','s':'#d6bd82','S':'#78b85f','f':'#78b85f','F':'#78b85f'};
 const groundLayer=document.createElement('canvas');
-groundLayer.width=MAP_W*TILE;
-groundLayer.height=MAP_H*TILE;
+groundLayer.width=MAP_W*TILE;groundLayer.height=MAP_H*TILE;
 const groundCtx=groundLayer.getContext('2d',{alpha:false});
 groundCtx.imageSmoothingEnabled=false;
 let groundLayerReady=false;
 
-function rand2(x,y,s=0){
-  let n=(x*374761393 + y*668265263 + s*69069)>>>0;
-  n=(n^(n>>13))*1274126177>>>0;
-  return ((n^(n>>16))>>>0)/4294967295;
-}
-
-function drawGrassTile(c,x,y,variant=0){
-  c.fillStyle=variant?'#73b259':'#78b85f';
-  c.fillRect(x,y,TILE,TILE);
-  for(let i=0;i<5;i++){
-    const px=x+2+Math.floor(rand2(x+i,y,11)*12);
-    const py=y+2+Math.floor(rand2(x,y+i,23)*12);
-    c.fillStyle=i%2?'#6ca853':'#85c56b';
-    c.fillRect(px,py,1,1);
-  }
-}
-
-function sameGroundFamily(tx,ty,family){
-  const g=groundAt(tx,ty);
-  return family.includes(g);
-}
+function rand2(x,y,s=0){let n=(x*374761393+y*668265263+s*69069)>>>0;n=(n^(n>>13))*1274126177>>>0;return((n^(n>>16))>>>0)/4294967295;}
+function sameGroundFamily(tx,ty,family){return family.includes(groundAt(tx,ty));}
+function drawGrassTile(c,x,y){c.fillStyle='#78b85f';c.fillRect(x,y,TILE,TILE);for(let i=0;i<4;i++){const px=x+2+Math.floor(rand2(x+i,y,11)*12),py=y+2+Math.floor(rand2(x,y+i,23)*12);c.fillStyle=i%2?'#6ca853':'#86c66c';c.fillRect(px,py,1,1);}}
 function drawPathTile(c,x,y,tx,ty){
-  c.fillStyle='#c9ad76';
-  c.fillRect(x,y,TILE,TILE);
-  c.fillStyle='#d8bf8b';
-  c.fillRect(x+2,y+3,2,1);
-  c.fillRect(x+10,y+11,2,1);
-  c.fillStyle='#b59661';
-  c.fillRect(x+6,y+7,1,1);
-  c.fillRect(x+13,y+4,1,1);
-  // Only shade the outside edge of a road, never every individual tile.
-  c.fillStyle='#9f804f';
-  if(!sameGroundFamily(tx,ty-1,['p','b'])) c.fillRect(x,y,TILE,1);
-  if(!sameGroundFamily(tx,ty+1,['p','b'])) c.fillRect(x,y+TILE-1,TILE,1);
-  if(!sameGroundFamily(tx-1,ty,['p','b'])) c.fillRect(x,y,1,TILE);
-  if(!sameGroundFamily(tx+1,ty,['p','b'])) c.fillRect(x+TILE-1,y,1,TILE);
+  c.fillStyle='#c9ad76';c.fillRect(x,y,TILE,TILE);
+  c.fillStyle='#d8bf8b';c.fillRect(x+2,y+3,2,1);c.fillRect(x+10,y+11,2,1);
+  c.fillStyle='#a58754';
+  if(!sameGroundFamily(tx,ty-1,['p','b']))c.fillRect(x,y,TILE,1);
+  if(!sameGroundFamily(tx,ty+1,['p','b']))c.fillRect(x,y+15,TILE,1);
+  if(!sameGroundFamily(tx-1,ty,['p','b']))c.fillRect(x,y,1,TILE);
+  if(!sameGroundFamily(tx+1,ty,['p','b']))c.fillRect(x+15,y,1,TILE);
 }
-
-function drawSandTile(c,x,y){
-  c.fillStyle='#d6bd82';
-  c.fillRect(x,y,TILE,TILE);
-  c.fillStyle='#c9aa6e';
-  c.fillRect(x+4,y+5,1,1);
-  c.fillRect(x+11,y+12,1,1);
+function drawBridgeTile(c,x,y,tx,ty){
+  c.fillStyle='#9c7245';c.fillRect(x,y,TILE,TILE);
+  c.fillStyle='#c69a63';for(let yy=2;yy<16;yy+=4)c.fillRect(x,y+yy,TILE,2);
+  c.fillStyle='#65482f';
+  if(ty===37)c.fillRect(x,y,TILE,2);
+  if(ty===41)c.fillRect(x,y+14,TILE,2);
 }
-
 function drawWaterTile(c,x,y,tx,ty){
-  c.fillStyle='#4c8fc9';
-  c.fillRect(x,y,TILE,TILE);
-  const phase=(tx+ty)%2;
-  c.fillStyle='#6ba9d7';
-  c.fillRect(x+2+phase*2,y+5,6,1);
-  c.fillRect(x+8-phase*2,y+12,5,1);
-  c.fillStyle='#397ab4';
-  c.fillRect(x+5,y+8,4,1);
+  c.fillStyle='#4c8fc9';c.fillRect(x,y,TILE,TILE);c.fillStyle='#6ba9d7';
+  c.fillRect(x+2+((tx+ty)&1)*2,y+5,6,1);c.fillRect(x+8,y+12,5,1);
   c.fillStyle='#8bc6df';
-  if(!sameGroundFamily(tx,ty-1,['w','W'])) c.fillRect(x,y,TILE,1);
-  if(!sameGroundFamily(tx,ty+1,['w','W'])) c.fillRect(x,y+TILE-1,TILE,1);
-  if(!sameGroundFamily(tx-1,ty,['w','W'])) c.fillRect(x,y,1,TILE);
-  if(!sameGroundFamily(tx+1,ty,['w','W'])) c.fillRect(x+TILE-1,y,1,TILE);
+  if(!sameGroundFamily(tx,ty-1,['w','W']))c.fillRect(x,y,TILE,1);
+  if(!sameGroundFamily(tx,ty+1,['w','W']))c.fillRect(x,y+15,TILE,1);
+  if(!sameGroundFamily(tx-1,ty,['w','W']))c.fillRect(x,y,1,TILE);
+  if(!sameGroundFamily(tx+1,ty,['w','W']))c.fillRect(x+15,y,1,TILE);
+}
+function drawTallGrassTile(c,x,y,tx,ty){c.fillStyle='#4f8a46';c.fillRect(x,y,TILE,TILE);c.fillStyle='#376f38';for(let i=0;i<4;i++){const px=x+2+i*4+((tx+ty+i)&1);c.fillRect(px,y+7,1,5);c.fillRect(px+1,y+9,1,3);}c.fillStyle='#69a75b';c.fillRect(x+3,y+4,1,4);c.fillRect(x+11,y+5,1,4);}
+function drawFlowerTile(c,x,y,alt=false){drawGrassTile(c,x,y);const cols=alt?['#ef8bb9','#fff2a8']:['#f2f0ff','#f1c74f'];for(let i=0;i<3;i++){const px=x+3+i*5,py=y+4+((i*3)%7);c.fillStyle=cols[i%2];c.fillRect(px,py,2,2);c.fillStyle='#4b8b3f';c.fillRect(px,py+2,1,2);}}
+function paintBaseTile(c,tx,ty,g){const x=tx*TILE,y=ty*TILE;if(g==='b')return drawBridgeTile(c,x,y,tx,ty);if(g==='p')return drawPathTile(c,x,y,tx,ty);if(g==='w'||g==='W')return drawWaterTile(c,x,y,tx,ty);if(g==='g')return drawTallGrassTile(c,x,y,tx,ty);if(g==='f'||g==='F')return drawFlowerTile(c,x,y,g==='F');if(g==='s'){c.fillStyle='#d6bd82';c.fillRect(x,y,TILE,TILE);return;}drawGrassTile(c,x,y);}
+function buildGroundLayer(){groundCtx.fillStyle=GROUND_COLOURS['.'];groundCtx.fillRect(0,0,groundLayer.width,groundLayer.height);for(let ty=0;ty<MAP_H;ty++)for(let tx=0;tx<MAP_W;tx++)paintBaseTile(groundCtx,tx,ty,groundAt(tx,ty));groundLayerReady=true;}
+
+function drawBuilding(b){
+  const x=Math.round(b.tx*TILE-world.camera.x),y=Math.round(b.ty*TILE-world.camera.y);
+  const w=b.w*TILE,h=b.h*TILE;
+  if(x+w<0||y+h<0||x>canvas.width||y>canvas.height)return;
+  ctx.fillStyle='rgba(0,0,0,.22)';ctx.fillRect(x+4,y+h-4,w,5);
+  ctx.fillStyle=b.trim;ctx.fillRect(x+6,y+3,w-12,h-5);
+  ctx.fillStyle=b.wall;ctx.fillRect(x+8,y+Math.floor(h*.48),w-16,Math.floor(h*.46));
+  // Flat stepped RPG roof.
+  const roofH=Math.floor(h*.55);
+  ctx.fillStyle=b.trim;ctx.fillRect(x+2,y+8,w-4,roofH-4);
+  ctx.fillStyle=b.roof;ctx.fillRect(x+5,y+5,w-10,roofH-6);
+  ctx.fillStyle=b.roof2;
+  for(let ry=y+9;ry<y+roofH-4;ry+=6)ctx.fillRect(x+7,ry,w-14,3);
+  // Eaves.
+  ctx.fillStyle=b.trim;ctx.fillRect(x+3,y+roofH-2,w-6,4);
+  // Windows.
+  ctx.fillStyle='#314d65';ctx.fillRect(x+14,y+roofH+9,12,10);ctx.fillRect(x+w-26,y+roofH+9,12,10);
+  ctx.fillStyle='#91c7d3';ctx.fillRect(x+16,y+roofH+11,8,6);ctx.fillRect(x+w-24,y+roofH+11,8,6);
+  // Door exactly matches interaction/collision footprint.
+  const doorPx=(b.doorX-b.tx)*TILE;
+  ctx.fillStyle=b.trim;ctx.fillRect(x+doorPx+3,y+h-25,10,25);
+  ctx.fillStyle='#76533b';ctx.fillRect(x+doorPx+4,y+h-23,8,23);
+  ctx.fillStyle='#e4bf63';ctx.fillRect(x+doorPx+10,y+h-12,2,2);
+  // Small sign plaque.
+  ctx.fillStyle='#d8b96d';ctx.fillRect(x+Math.floor(w/2)-15,y+roofH+2,30,6);
+  ctx.fillStyle=b.trim;ctx.fillRect(x+Math.floor(w/2)-12,y+roofH+4,24,2);
 }
 
-function drawTallGrassTile(c,x,y,tx,ty){
-  c.fillStyle='#4f8a46';
-  c.fillRect(x,y,TILE,TILE);
-  c.fillStyle='#376f38';
-  for(let i=0;i<4;i++){
-    const px=x+2+i*4+((tx+ty+i)&1);
-    c.fillRect(px,y+7,1,5);
-    c.fillRect(px+1,y+9,1,3);
+function drawLandmark(l){
+  const x=Math.round(l.tx*TILE-world.camera.x),y=Math.round(l.ty*TILE-world.camera.y),w=l.w*TILE,h=l.h*TILE;
+  if(x+w<0||y+h<0||x>canvas.width||y>canvas.height)return;
+  if(l.type==='mine'){
+    ctx.fillStyle='#6d6253';ctx.fillRect(x+8,y+16,w-16,h-16);
+    ctx.fillStyle='#4f493f';ctx.fillRect(x+16,y+8,w-32,20);
+    ctx.fillStyle='#302a26';ctx.fillRect(x+Math.floor(w/2)-28,y+h-54,56,54);
+    ctx.fillStyle='#8b6745';ctx.fillRect(x+Math.floor(w/2)-32,y+h-58,6,58);ctx.fillRect(x+Math.floor(w/2)+26,y+h-58,6,58);ctx.fillRect(x+Math.floor(w/2)-32,y+h-58,64,6);
+    ctx.fillStyle='#b39161';ctx.fillRect(x+20,y+30,22,8);ctx.fillRect(x+w-42,y+34,22,8);
+  }else{
+    ctx.fillStyle='#657061';ctx.fillRect(x+8,y+18,w-16,h-18);
+    ctx.fillStyle='#4f5a50';ctx.fillRect(x+18,y+8,w-36,25);
+    ctx.fillStyle='#242a27';ctx.beginPath();ctx.ellipse(x+w/2,y+h-30,34,38,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#838b79';ctx.fillRect(x+12,y+h-18,22,8);ctx.fillRect(x+w-36,y+h-20,24,10);
   }
-  c.fillStyle='#69a75b';
-  c.fillRect(x+3,y+4,1,4);
-  c.fillRect(x+11,y+5,1,4);
 }
 
-function drawFlowerTile(c,x,y,alt=false){
-  drawGrassTile(c,x,y,alt?1:0);
-  const colours=alt?['#ef8bb9','#fff2a8']:['#f2f0ff','#f1c74f'];
-  for(let i=0;i<3;i++){
-    const px=x+3+i*5;
-    const py=y+4+((i*3)%7);
-    c.fillStyle=colours[i%2];
-    c.fillRect(px,py,2,2);
-    c.fillStyle='#4b8b3f';
-    c.fillRect(px,py+2,1,2);
+function drawSpring(){
+  const cx=Math.round(38.5*TILE-world.camera.x),cy=Math.round(36.5*TILE-world.camera.y);
+  ctx.fillStyle='#756b5c';ctx.fillRect(cx-19,cy-12,38,25);
+  ctx.fillStyle='#b8b09d';ctx.fillRect(cx-16,cy-9,32,19);
+  ctx.fillStyle='#6fc0ef';ctx.fillRect(cx-13,cy-6,26,13);
+  ctx.fillStyle='#e7dfc7';ctx.fillRect(cx-3,cy-22,6,18);
+  ctx.fillStyle='#9de0ff';ctx.fillRect(cx-1,cy-19,2,14);
+}
+
+function drawNPC(n){
+  const nx=Math.round((n.tx+.5)*TILE-world.camera.x),ny=Math.round((n.ty+.5)*TILE-world.camera.y);
+  if(nx<-16||ny<-24||nx>canvas.width+16||ny>canvas.height+24)return;
+  ctx.fillStyle='rgba(0,0,0,.22)';ctx.fillRect(nx-6,ny+7,12,3);
+  ctx.fillStyle=n.hair;ctx.fillRect(nx-5,ny-11,10,5);
+  ctx.fillStyle='#e4bd91';ctx.fillRect(nx-4,ny-6,8,6);
+  ctx.fillStyle=n.shirt;ctx.fillRect(nx-5,ny,10,8);
+  ctx.fillStyle='#26314b';ctx.fillRect(nx-5,ny+8,4,7);ctx.fillRect(nx+1,ny+8,4,7);
+}
+
+function drawInterior(){
+  ctx.fillStyle='#262d39';ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle='#c8ad7d';ctx.fillRect(16,16,288,214);
+  for(let y=24;y<224;y+=16){ctx.fillStyle=(y/16)%2?'#c2a574':'#cdb386';ctx.fillRect(20,y,280,1);}
+  ctx.fillStyle='#705847';ctx.fillRect(48,48,224,32);
+  ctx.fillStyle='#8d7158';ctx.fillRect(52,52,216,24);
+  ctx.fillStyle='#4b586a';ctx.fillRect(32,112,48,48);ctx.fillRect(240,112,48,48);
+  if(activeInterior==='clinic'){
+    ctx.fillStyle='#d4e2e8';ctx.fillRect(115,94,90,42);ctx.fillStyle='#b64c52';ctx.fillRect(151,101,18,28);ctx.fillRect(146,106,28,18);
+  }else{
+    ctx.fillStyle='#6e513b';ctx.fillRect(112,96,96,34);ctx.fillStyle='#b88a55';ctx.fillRect(120,102,20,5);ctx.fillRect(173,111,28,5);
   }
-}
-
-function paintBaseTile(c,tx,ty,g){
-  const x=tx*TILE, y=ty*TILE;
-  if(g==='p'||g==='b') return drawPathTile(c,x,y,tx,ty);
-  if(g==='s') return drawSandTile(c,x,y);
-  if(g==='w'||g==='W') return drawWaterTile(c,x,y,tx,ty);
-  if(g==='g') return drawTallGrassTile(c,x,y,tx,ty);
-  if(g==='f') return drawFlowerTile(c,x,y,false);
-  if(g==='F') return drawFlowerTile(c,x,y,true);
-  drawGrassTile(c,x,y,0);
-}
-
-function buildGroundLayer(){
-  groundCtx.fillStyle=GROUND_COLOURS['.'];
-  groundCtx.fillRect(0,0,groundLayer.width,groundLayer.height);
-  for(let ty=0;ty<MAP_H;ty++){
-    for(let tx=0;tx<MAP_W;tx++) paintBaseTile(groundCtx,tx,ty,groundAt(tx,ty));
-  }
-  groundLayerReady=true;
+  ctx.fillStyle='#96724d';ctx.fillRect(136,208,48,16);
+  ctx.fillStyle='#15191e';ctx.fillRect(144,218,32,12);
 }
 
 function drawWorld(){
-  if(!groundLayerReady) buildGroundLayer();
-  ctx.fillStyle=GROUND_COLOURS['.'];
-  ctx.fillRect(0,0,canvas.width,canvas.height);
-  const firstX=Math.floor(world.camera.x/TILE), firstY=Math.floor(world.camera.y/TILE);
-  const offsetX=-(world.camera.x%TILE), offsetY=-(world.camera.y%TILE);
-  const cols=Math.ceil(canvas.width/TILE)+2, rows=Math.ceil(canvas.height/TILE)+2;
+  if(activeInterior){
+    drawInterior();
+  }else{
+    if(!groundLayerReady)buildGroundLayer();
+    ctx.fillStyle=GROUND_COLOURS['.'];ctx.fillRect(0,0,canvas.width,canvas.height);
+    const sx=Math.floor(world.camera.x),sy=Math.floor(world.camera.y);
+    const sw=Math.min(canvas.width,groundLayer.width-sx),sh=Math.min(canvas.height,groundLayer.height-sy);
+    if(sw>0&&sh>0)ctx.drawImage(groundLayer,sx,sy,sw,sh,0,0,sw,sh);
 
-  if(groundLayerReady){
-    const sx=Math.max(0,Math.floor(world.camera.x));
-    const sy=Math.max(0,Math.floor(world.camera.y));
-    const sw=Math.min(canvas.width,groundLayer.width-sx);
-    const sh=Math.min(canvas.height,groundLayer.height-sy);
-    if(sw>0&&sh>0) ctx.drawImage(groundLayer,sx,sy,sw,sh,0,0,sw,sh);
-  }
-
-  // Objects are a separate overlay layer, like classic tilemap engines.
-  for(let y=0;y<rows;y++){
-    for(let x=0;x<cols;x++){
-      const tx=firstX+x, ty=firstY+y;
-      if(tx<0||ty<0||tx>=MAP_W||ty>=MAP_H) continue;
-      const px=Math.floor(offsetX+x*TILE), py=Math.floor(offsetY+y*TILE);
-      const o=objAt(tx,ty);
-      const oiKey=objectSpriteKey(tx,ty), oi=oiKey?images[oiKey]:null;
-      if(oi&&oi.complete){
-        let dw=TILE, dh=TILE, ox=0, oy=0;
-        if(o==='t'||o==='t2'){dw=48;dh=58;ox=-16;oy=-42;}
-        else if(o==='tp'){dw=42;dh=58;ox=-13;oy=-42;}
-        else if(o==='bu'||o==='rk'){dw=30;dh=30;ox=-7;oy=-14;}
-        else if(o==='bn'){dw=46;dh=26;ox=-15;oy=-10;}
-        else if(o==='lp'){dw=22;dh=42;ox=-3;oy=-28;}
-        else if(o==='sg'){dw=28;dh=34;ox=-6;oy=-20;}
-        else if(o==='sv'){dw=38;dh=48;ox=-11;oy=-34;}
-        ctx.drawImage(oi,px+ox,py+oy,dw,dh);
-      }
+    const firstX=Math.floor(world.camera.x/TILE),firstY=Math.floor(world.camera.y/TILE);
+    const offsetX=-(world.camera.x%TILE),offsetY=-(world.camera.y%TILE);
+    const cols=Math.ceil(canvas.width/TILE)+2,rows=Math.ceil(canvas.height/TILE)+2;
+    for(let y=0;y<rows;y++)for(let x=0;x<cols;x++){
+      const tx=firstX+x,ty=firstY+y;if(tx<0||ty<0||tx>=MAP_W||ty>=MAP_H)continue;
+      const key=objectSpriteKey(tx,ty),oi=key?images[key]:null;if(!oi||!oi.complete)continue;
+      const o=objAt(tx,ty),px=Math.floor(offsetX+x*TILE),py=Math.floor(offsetY+y*TILE);
+      let dw=TILE,dh=TILE,ox=0,oy=0;
+      if(o==='t'||o==='t2'){dw=48;dh=58;ox=-16;oy=-42;}else if(o==='tp'){dw=42;dh=58;ox=-13;oy=-42;}
+      else if(o==='bu'||o==='rk'){dw=30;dh=30;ox=-7;oy=-14;}else if(o==='bn'){dw=46;dh=26;ox=-15;oy=-10;}
+      else if(o==='lp'){dw=22;dh=42;ox=-3;oy=-28;}else if(o==='sg'){dw=28;dh=34;ox=-6;oy=-20;}else if(o==='sv'){dw=38;dh=48;ox=-11;oy=-34;}
+      ctx.drawImage(oi,px+ox,py+oy,dw,dh);
     }
-  }
-
-  // Approved large world assets
-  for(const obj of Object.values(LARGE_OBJECTS)){
-    const img=images[obj.src];
-    if(!img||!img.complete) continue;
-    const wx=obj.tx*TILE, wy=obj.ty*TILE;
-    const sx=Math.round(wx-world.camera.x-obj.anchorX);
-    const sy=Math.round(wy-world.camera.y-obj.anchorY);
-    ctx.drawImage(img,sx,sy,obj.w,obj.h);
-  }
-
-  for(const n of WORLD_NPCS){
-    const nx=Math.round((n.tx+.5)*TILE-world.camera.x);
-    const ny=Math.round((n.ty+.5)*TILE-world.camera.y);
-    if(nx<-16||ny<-24||nx>canvas.width+16||ny>canvas.height+24) continue;
-    ctx.fillStyle='rgba(0,0,0,.22)'; ctx.fillRect(nx-6,ny+7,12,3);
-    ctx.fillStyle=n.hair; ctx.fillRect(nx-5,ny-11,10,5);
-    ctx.fillStyle='#e4bd91'; ctx.fillRect(nx-4,ny-6,8,6);
-    ctx.fillStyle=n.shirt; ctx.fillRect(nx-5,ny,10,8);
-    ctx.fillStyle='#26314b'; ctx.fillRect(nx-5,ny+8,4,7); ctx.fillRect(nx+1,ny+8,4,7);
+    BUILDINGS.forEach(drawBuilding);
+    LANDMARKS.forEach(drawLandmark);
+    drawSpring();
+    WORLD_NPCS.forEach(drawNPC);
   }
 
   const trainerFrames=TRAINER_FRAMES[state.trainerGender]||TRAINER_FRAMES.boy;
   const pImg=images[trainerFrames[state.dir][world.frame]];
-  const drawX=Math.round(state.pos.x-world.camera.x-world.drawSize/2);
-  const drawY=Math.round(state.pos.y-world.camera.y-world.drawSize/2-6);
-  if(pImg&&pImg.complete) ctx.drawImage(pImg,drawX,drawY,world.drawSize,world.drawSize);
-  else {ctx.fillStyle='#ff6767';ctx.fillRect(drawX+8,drawY+8,16,16);}
+  const camX=activeInterior?0:world.camera.x,camY=activeInterior?0:world.camera.y;
+  const drawX=Math.round(state.pos.x-camX-world.drawSize/2),drawY=Math.round(state.pos.y-camY-world.drawSize/2-6);
+  if(pImg&&pImg.complete)ctx.drawImage(pImg,drawX,drawY,world.drawSize,world.drawSize);
+  else{ctx.fillStyle='#ff6767';ctx.fillRect(drawX+8,drawY+8,16,16);}
 }
-function loop(ts){if(!world.lastTime) world.lastTime=ts; const dt=Math.min(0.033,(ts-world.lastTime)/1000); world.lastTime=ts; updateWorld(dt); drawWorld(); requestAnimationFrame(loop)}
+
+function loop(ts){if(!world.lastTime)world.lastTime=ts;const dt=Math.min(.033,(ts-world.lastTime)/1000);world.lastTime=ts;updateWorld(dt);drawWorld();requestAnimationFrame(loop);}
 // battle
 function pickEncounter(){const pool=BEASTS.filter(b=>!['Starter','Elite'].includes(b.rarity)); const weighted=[]; const weights={Common:7,Uncommon:3,Rare:1}; pool.forEach(b=>{for(let i=0;i<(weights[b.rarity]||1);i++) weighted.push(b)}); return weighted[Math.floor(Math.random()*weighted.length)]}
 function activeMon(){return battle?state.party[battle.active]:null} function typeMod(attType,defType){if(attType==='Neutral') return 1; if(TYPES[attType]&&TYPES[attType].strong===defType) return 1.5; if(TYPES[attType]&&TYPES[attType].weak===defType) return 0.67; return 1;} function calcDamage(attacker,defender,moveName){const mv=MOVES[moveName]||MOVES['Scratch']; const as=statsFor(attacker), ds=statsFor(defender); const stab=mv.type===beastBy(attacker.id).type?1.15:1, mod=typeMod(mv.type,beastBy(defender.id).type); const raw=((attacker.level*0.6+3)*mv.power*(as[1]/Math.max(1,ds[2]))/45)+2; return {damage:Math.max(1,Math.round(raw*stab*mod*(0.9+Math.random()*0.2))),mod,hit:Math.random()*100<mv.acc};}
