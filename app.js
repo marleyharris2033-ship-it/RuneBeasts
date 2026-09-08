@@ -132,40 +132,45 @@ const TILESET={
 'wd':'tile_grass_v2.png',
 'wr':'tile_grass_v2.png'
 };
-const LARGE_OBJECTS={
-  houseA:{src:'obj_house_v2.png',tx:7,ty:16,w:150,h:128,anchorX:20,anchorY:108},
-  houseB:{src:'obj_house_v2.png',tx:7,ty:31,w:150,h:128,anchorX:20,anchorY:108},
-  workshop:{src:'obj_cabin_v2.png',tx:25,ty:16,w:150,h:128,anchorX:20,anchorY:108},
-  spring:{src:'obj_spring_v2.png',tx:23,ty:25,w:92,h:92,anchorX:30,anchorY:70},
-  bridge:{src:'obj_bridge_v2.png',tx:43,ty:23,w:150,h:102,anchorX:75,anchorY:51},
-  mine:{src:'obj_mine_v2.png',tx:53,ty:16,w:150,h:122,anchorX:75,anchorY:102},
-  cave:{src:'obj_cave_v2.png',tx:53,ty:32,w:140,h:122,anchorX:70,anchorY:104},
-  barrels:{src:'obj_barrel_v2.png',tx:48,ty:19,w:34,h:34,anchorX:0,anchorY:20},
-  crates:{src:'obj_crate_v2.png',tx:56,ty:24,w:34,h:34,anchorX:0,anchorY:20}
-};
-
-const LARGE_COLLIDERS=[
-  {x:7*TILE-8,y:16*TILE-44,w:126,h:76,label:'house'},
-  {x:7*TILE-8,y:31*TILE-44,w:126,h:76,label:'house'},
-  {x:25*TILE-8,y:16*TILE-44,w:126,h:76,label:'workshop'},
-  {x:49*TILE,y:16*TILE-58,w:124,h:74,label:'mine'},
-  {x:49*TILE,y:32*TILE-58,w:124,h:70,label:'cave'}
+const BUILDINGS=[
+  {id:'guild',name:'Rune Lodge',tx:24,ty:8,w:11,h:8,doorX:29,doorY:15,roof:'#a94e42',roof2:'#d06a51',wall:'#e8cf9a',trim:'#744438',enterable:false},
+  {id:'homeA',name:'Maple House',tx:12,ty:11,w:9,h:7,doorX:16,doorY:17,roof:'#b65445',roof2:'#da7157',wall:'#ead6a7',trim:'#754536',enterable:false},
+  {id:'homeB',name:'Willow House',tx:40,ty:11,w:9,h:7,doorX:44,doorY:17,roof:'#4e728f',roof2:'#6f98b5',wall:'#e6d4aa',trim:'#435264',enterable:false},
+  {id:'workshop',name:'Rowan’s Workshop',tx:50,ty:28,w:10,h:8,doorX:55,doorY:35,roof:'#7c5a3e',roof2:'#a17b58',wall:'#d9c39c',trim:'#594332',enterable:true,interior:'workshop'},
+  {id:'clinic',name:'Rune Clinic',tx:10,ty:44,w:10,h:8,doorX:15,doorY:51,roof:'#b64c52',roof2:'#db6f72',wall:'#f0dbb4',trim:'#70464a',enterable:true,interior:'clinic'},
+  {id:'inn',name:'Moonbell Inn',tx:43,ty:45,w:10,h:8,doorX:48,doorY:52,roof:'#5b5f91',roof2:'#7c82b0',wall:'#e6d1a8',trim:'#444767',enterable:false}
 ];
+
+const LANDMARKS=[
+  {id:'mine',name:'Old Eastbank Mine',tx:84,ty:17,w:15,h:9,doorX:91,doorY:25,type:'mine'},
+  {id:'cave',name:'Whisper Cave',tx:98,ty:57,w:14,h:8,doorX:105,doorY:64,type:'cave'}
+];
+
+const WORLD_BLOCKED=makeGrid(false);
+function blockRect(tx,ty,w,h){for(let y=ty;y<ty+h;y++)for(let x=tx;x<tx+w;x++)if(x>=0&&y>=0&&x<MAP_W&&y<MAP_H)WORLD_BLOCKED[y][x]=true;}
+BUILDINGS.forEach(b=>blockRect(b.tx,b.ty,b.w,b.h));
+LANDMARKS.forEach(b=>blockRect(b.tx,b.ty,b.w,b.h));
+
 const WORLD_NPCS=[
-  {id:'rowan',name:'Rowan',tx:24,ty:19,shirt:'#6c4d9e',hair:'#5b3b25'},
-  {id:'mina',name:'Mina',tx:18,ty:24,shirt:'#3f7fb5',hair:'#7b4b2a'},
-  {id:'quarryman',name:'Bram',tx:50,ty:23,shirt:'#8a6336',hair:'#403126'}
+  {id:'rowan',name:'Rowan',tx:55,ty:38,shirt:'#6c4d9e',hair:'#5b3b25'},
+  {id:'mina',name:'Mina',tx:34,ty:43,shirt:'#3f7fb5',hair:'#7b4b2a'},
+  {id:'quarryman',name:'Bram',tx:84,ty:43,shirt:'#8a6336',hair:'#403126'}
 ];
 const INTERACTION_POINTS=[
-  {id:'townSign',tx:18,ty:34},
-  {id:'mine',tx:53,ty:18},
-  {id:'cave',tx:53,ty:34},
-  {id:'bridge',tx:43,ty:23}
+  {id:'townSign',tx:33,ty:66},
+  {id:'bridge',tx:69,ty:39},
+  {id:'spring',tx:38,ty:36},
+  {id:'mine',tx:91,ty:25},
+  {id:'cave',tx:105,ty:64}
 ];
 function npcBox(n){return {x:n.tx*TILE+3,y:n.ty*TILE+2,w:10,h:12};}
+
 const SOLID_GROUND=new Set(['w','W']);
 const SOLID_OBJECT=new Set(['t','t2','tp','n','rk','bu','st','bn','lp','sg','hl','hm','hr','wl','wr']);
-const ENCOUNTER_GROUND=new Set(['g']); const HEAL_GROUND=new Set(['S']); const SAVE_GROUND=new Set([]); const SAVE_OBJECT=new Set(['sv']); const DOOR_OBJECT=new Set(['wd']);
+const ENCOUNTER_GROUND=new Set(['g']); 
+const HEAL_GROUND=new Set(['S']); 
+const SAVE_OBJECT=new Set(['sv']);
+
 let state={party:[],collection:{},shards:100,wins:0,captures:0,steps:0,pos:{x:(10+0.5)*TILE,y:(22+0.5)*TILE},dir:'down',trainerName:'Trainer',trainerGender:'boy',flags:{}};
 let pendingSetup={trainerName:'Trainer',trainerGender:'boy'}; let battle=null;
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)]; const beastBy=id=>BEASTS.find(b=>b.id===id); const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)); const xpNeed=lv=>30+lv*20; const typeColors={Fire:'#b94b39',Water:'#3678bb',Grass:'#4e8c49',Electric:'#b69525',Flying:'#687fb8',Rock:'#786f67',Neutral:'#596680'};
