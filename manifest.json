@@ -3,8 +3,8 @@
   "short_name": "RuneBeasts",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#0c1020",
-  "theme_color": "#15182a",
+  "background_color": "#0b1020",
+  "theme_color": "#11182c",
   "icons": [
     {
       "src": "icon.svg",
