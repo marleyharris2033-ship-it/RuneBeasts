@@ -599,7 +599,17 @@ function setChoice(g){pendingSetup.trainerGender=g; $('#boyChoice').classList.to
 $('#newGameBtn').onclick=()=>{pendingSetup={trainerName:'Trainer',trainerGender:'boy'}; $('#trainerNameInput').value=''; setChoice('boy'); showScreen('setupScreen');}; $('#continueBtn').onclick=()=>showScreen('worldScreen'); $('#boyChoice').onclick=()=>setChoice('boy'); $('#girlChoice').onclick=()=>setChoice('girl'); $('#toStarterBtn').onclick=()=>{const name=$('#trainerNameInput').value.trim(); pendingSetup.trainerName=(name||'Trainer').slice(0,14); renderStarters(); showScreen('starterScreen');};
 $('#movesBtn').onclick=showMoves; $('#captureBtn').onclick=attemptCapture; $('#switchBtn').onclick=showSwitch; $('#runBtn').onclick=runAway; $('#cancelBattleSubmenu').onclick=closeSubmenus; $('#healBtn').onclick=()=>{healParty(false); alert('Party restored.')}; $('#manualSaveBtn').onclick=()=>{save(); alert('Game saved.')}; $('#resetBtn').onclick=()=>{if(confirm('Delete all Rune Beasts progress?')){localStorage.removeItem(SAVE_KEY); location.reload();}};
 $$('[data-screen]').forEach(btn=>btn.onclick=()=>showScreen(btn.dataset.screen)); $$('.control').forEach(bindControl); $('#interactBtn').onclick=interactWorld;
-if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{})} buildGroundLayer(); load(); $('#continueBtn').classList.toggle('hidden',!localStorage.getItem(SAVE_KEY)); renderWorldPanels(); requestAnimationFrame(loop);
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{})}
+try{buildGroundLayer();}catch(err){console.error('Ground build failed',err);}
+try{load();}catch(err){console.error('Save load failed',err);}
+requestAnimationFrame(loop);
+try{
+  $('#continueBtn').classList.toggle('hidden',!localStorage.getItem(SAVE_KEY));
+  renderWorldPanels();
+}catch(err){
+  console.error('UI startup failed',err);
+  const wt=$('#worldText'); if(wt) wt.textContent='World loaded. UI recovered from a startup error.';
+}
 
 window.addEventListener('error',e=>{
   console.error('Rune Beasts runtime error',e.error||e.message);
