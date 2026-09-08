@@ -28,96 +28,92 @@ const assetUrl=src=>ASSET_BUNDLES[src]||src;
 const SPRITES={cindercub:"cindercub.png",ripplet:"ripplet.png",spriglet:"spriglet.png",ashbit:"ashbit.png",bubbfin:"bubbfin.png",mossbug:"mossbug.png",sparkit:"sparkit.png",breezlet:"breezlet.png",pebblit:"pebblit.png",voltpup:"voltpup.png",vineape:"vineape.png",craggoat:"craggoat.png"};
 const TRAINER_FRAMES={boy:{down:["boy_down_0.png","boy_down_1.png"],up:["boy_up_0.png","boy_up_1.png"],left:["boy_left_0.png","boy_left_1.png"],right:["boy_right_0.png","boy_right_1.png"]},girl:{down:["girl_down_0.png","girl_down_1.png"],up:["girl_up_0.png","girl_up_1.png"],left:["girl_left_0.png","girl_left_1.png"],right:["girl_right_0.png","girl_right_1.png"]}};
 const TILE=16, MAP_W=120, MAP_H=80;
-const WORLD_SPAWN={tx:33,ty:41};
+const WORLD_SPAWN={tx:38,ty:42};
 const makeGrid=(fill)=>Array.from({length:MAP_H},()=>Array(MAP_W).fill(fill));
 const groundGrid=makeGrid('.');
 const paintGround=(x,y,w,h,ch)=>{for(let yy=y;yy<y+h;yy++)for(let xx=x;xx<x+w;xx++)if(xx>=0&&yy>=0&&xx<MAP_W&&yy<MAP_H)groundGrid[yy][xx]=ch;};
 const paintPath=(x,y,w,h)=>paintGround(x,y,w,h,'p');
 
-// ---- Runevale Town -------------------------------------------------------
-// Main north/south street and east/west market road.
-paintPath(31,5,5,64);
-paintPath(7,38,59,5);
-paintPath(23,28,23,17);                 // central square
-paintPath(12,18,22,4);                  // north-west residential lane
-paintPath(38,17,21,4);                  // north-east lane
-paintPath(10,53,25,4);                  // south-west lane
-paintPath(39,54,22,4);                  // south-east lane
-paintPath(17,18,4,22);
-paintPath(49,18,4,23);
-paintPath(17,41,4,15);
-paintPath(49,41,4,16);
-paintPath(31,68,5,11);                  // road through the south gate
+// ---- Modern Runevale -----------------------------------------------------
+// Broad central plaza and generous roads inspired by the new visual target.
+paintPath(22,24,33,29);                 // open stone town square
+paintPath(34,5,7,19);                   // north approach
+paintPath(5,35,17,7);                   // west approach
+paintPath(55,35,14,7);                  // east approach to bridge
+paintPath(34,53,7,25);                  // south route
+paintPath(9,18,25,5);                   // market / north-west lane
+paintPath(41,17,18,5);                  // inn / north-east lane
+paintPath(8,54,26,5);                   // clinic / south-west lane
+paintPath(43,55,18,5);                  // workshop / south-east lane
 
-// Town greens and landscaped plots.
-paintGround(7,7,19,8,'F');
-paintGround(40,7,19,7,'f');
-paintGround(8,24,11,10,'F');
-paintGround(54,24,10,10,'f');
-paintGround(8,60,17,9,'f');
-paintGround(44,62,17,7,'F');
+// Open lawns and gardens around the square.
+paintGround(5,6,24,10,'F');
+paintGround(45,6,17,9,'f');
+paintGround(5,25,13,8,'f');
+paintGround(57,24,8,9,'F');
+paintGround(6,62,20,11,'f');
+paintGround(46,64,17,9,'F');
 
-// Healing garden in the square.
-paintGround(36,34,5,5,'f');
-groundGrid[36][38]='S';
+// Central fountain garden.
+paintGround(34,34,9,9,'f');
+groundGrid[38][38]='S';
 
-// North-west pond/grove.
-paintGround(3,9,8,13,'w');
-paintGround(4,10,6,11,'W');
+// Small north-west pond/grove.
+paintGround(2,11,7,12,'w');
+paintGround(3,12,5,10,'W');
 
-// ---- River / Bridge ------------------------------------------------------
-paintGround(66,1,7,78,'w');
-paintGround(65,37,9,5,'b');
-paintPath(58,37,8,5);
-paintPath(73,37,16,5);
+// ---- River / stone bridge ------------------------------------------------
+paintGround(69,1,7,78,'w');
+paintGround(68,36,9,6,'b');
+paintPath(61,35,7,8);
+paintPath(76,35,13,8);
 
-// ---- Eastbank / Quarry ---------------------------------------------------
-paintPath(87,15,5,48);
-paintPath(76,39,31,4);
-paintPath(83,24,18,4);
-paintPath(83,55,21,4);
-paintGround(76,7,18,14,'g');
-paintGround(99,7,17,18,'g');
-paintGround(76,46,16,18,'g');
-paintGround(101,47,15,18,'g');
-paintGround(82,28,24,9,'s');
-paintGround(94,60,16,8,'s');
+// ---- Eastbank Quarry -----------------------------------------------------
+paintPath(88,12,6,53);
+paintPath(78,36,31,7);
+paintPath(83,22,20,5);
+paintPath(83,54,23,5);
+paintGround(78,5,17,14,'g');
+paintGround(99,6,17,18,'g');
+paintGround(78,47,15,18,'g');
+paintGround(101,46,15,19,'g');
+paintGround(82,28,25,7,'s');
+paintGround(94,60,18,8,'s');
+paintGround(107,27,9,8,'w');
+paintGround(109,28,6,6,'W');
 
-// Quarry pools.
-paintGround(106,29,9,8,'w');
-paintGround(108,30,6,6,'W');
+// South route grass to suggest the next area.
+paintGround(29,72,18,8,'g');
 
-// South route preview beyond town.
-paintGround(28,72,11,8,'g');
-
-// Border river rocks / natural frame remain ground; objects provide blocking.
 const GROUND=groundGrid.map(row=>row.join(''));
 
 const OBJECTS=makeGrid('');
 const putObj=(x,y,v)=>{if(x>=0&&y>=0&&x<MAP_W&&y<MAP_H)OBJECTS[y][x]=v;};
 const scatter=(coords,vals=['t','t2'])=>coords.forEach(([x,y],i)=>putObj(x,y,vals[i%vals.length]));
 
-// Outer woodland boundary with intentional openings at the south road and bridge.
-for(let x=0;x<66;x+=2){putObj(x,0,x%4?'t':'t2'); if(!(x>=29&&x<=38)) putObj(x,79,x%4?'t2':'t');}
-for(let y=2;y<79;y+=3){putObj(0,y,y%2?'t':'t2'); putObj(64,y,y%2?'t2':'t');}
-for(let x=74;x<120;x+=2){putObj(x,0,'tp'); putObj(x,79,'tp');}
-for(let y=2;y<79;y+=3){putObj(119,y,'tp');}
+// Natural frame with broad openings at roads and bridge.
+for(let x=0;x<68;x+=3){putObj(x,0,x%2?'t':'t2');if(!(x>=31&&x<=44))putObj(x,79,x%2?'t2':'t');}
+for(let y=3;y<79;y+=4){putObj(0,y,y%2?'t':'t2');putObj(66,y,y%2?'t2':'t');}
+for(let x=77;x<120;x+=3){putObj(x,0,'tp');putObj(x,79,'tp');}
+for(let y=3;y<79;y+=4)putObj(119,y,'tp');
 
-// Groves and town-edge vegetation.
-scatter([[3,4],[6,4],[9,4],[12,4],[15,4],[18,4],[22,4],[5,24],[8,36],[12,36],[57,10],[60,12],[61,46],[58,71],[54,73],[10,72],[14,73],[20,74]]);
-scatter([[75,3],[79,4],[84,3],[95,3],[102,4],[110,3],[115,5],[75,26],[77,31],[114,42],[117,48],[76,68],[81,72],[112,71]],['tp']);
+// Tree clusters, deliberately leaving the town centre open.
+scatter([[3,4],[7,4],[11,4],[16,4],[22,4],[5,24],[11,31],[60,8],[63,12],[61,49],[59,73],[53,75],[7,75],[14,75],[21,76]]);
+scatter([[78,3],[84,3],[92,3],[101,3],[110,4],[115,9],[78,28],[115,41],[116,51],[78,69],[86,73],[111,72]],['tp']);
 
-// Town furniture: lamps frame roads; benches sit in greens/square.
-[[29,14],[37,14],[29,26],[37,26],[29,48],[37,48],[29,61],[37,61],[15,36],[22,36],[45,36],[56,36]].forEach(p=>putObj(...p,'lp'));
-[[25,31],[44,31],[25,46],[44,46],[13,62],[54,64]].forEach(p=>putObj(...p,'bn'));
-[[10,27],[58,28],[12,58],[57,59]].forEach(p=>putObj(...p,'bu'));
-putObj(43,42,'sv');
-putObj(33,66,'sg');
+// Lamps around the plaza and bridge like the new mockup.
+[[22,27],[31,27],[45,27],[54,27],[22,49],[31,49],[45,49],[54,49],[63,34],[63,43],[80,34],[80,43]].forEach(p=>putObj(...p,'lp'));
 
-// Eastbank rocks / pines form believable quarry edges rather than random clutter.
-[[78,23],[80,28],[80,60],[85,66],[96,27],[102,26],[106,43],[112,43],[96,69],[105,70]].forEach(p=>putObj(...p,'rk'));
-[[75,5],[82,5],[91,5],[98,5],[116,27],[116,36],[116,58],[75,74],[89,74],[103,74]].forEach(p=>putObj(...p,'tp'));
-[[80,45],[96,45],[105,46],[112,66],[78,66]].forEach(p=>putObj(...p,'bu'));
+// Benches, hedges and save crystal.
+[[25,32],[50,32],[25,45],[50,45],[14,64],[54,66]].forEach(p=>putObj(...p,'bn'));
+[[11,27],[60,28],[10,61],[59,61],[28,20],[47,20]].forEach(p=>putObj(...p,'bu'));
+putObj(48,48,'sv');
+putObj(37,69,'sg');
+
+// Quarry dressing.
+[[80,20],[81,29],[81,61],[87,68],[97,27],[103,26],[108,44],[113,43],[97,70],[106,70]].forEach(p=>putObj(...p,'rk'));
+[[78,5],[85,5],[94,5],[101,5],[116,26],[116,36],[116,58],[78,75],[91,75],[104,75]].forEach(p=>putObj(...p,'tp'));
+[[82,45],[97,45],[106,47],[112,66],[80,66]].forEach(p=>putObj(...p,'bu'));
 
 const TILESET={
 '.':['tile_grass_v2.png','tile_grass_alt_v2.png'],
