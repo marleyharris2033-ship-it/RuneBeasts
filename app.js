@@ -273,7 +273,7 @@ function renderShop(){
   $('#shopShards').textContent=state.shards;
   $('#shopList').innerHTML=Object.entries(SHOP_ITEMS).map(([id,it])=>`<div class="shopItem"><div><b>${it.name}</b><small>${it.desc}</small></div><button class="secondary buyItem" data-item="${id}">✦ ${it.price}</button></div>`).join('');
   renderBag();
-  $('.buyItem').forEach(btn=>btn.onclick=()=>buyShopItem(btn.dataset.item));
+  document.querySelectorAll('.buyItem').forEach(btn=>btn.onclick=()=>buyShopItem(btn.dataset.item));
 }
 function buyShopItem(id){
   const it=SHOP_ITEMS[id]; if(!it)return;
