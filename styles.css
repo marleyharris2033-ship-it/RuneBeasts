@@ -15,3 +15,6 @@
 .bottomNav{background:#091525;border-top-color:#e7c95f}
 .bottomNav button.active{background:#15345a;color:#ffe17d}
 .trainerChoice.active{background:#174a5b;border-color:#8eeeff;box-shadow:0 0 12px rgba(70,220,255,.45),4px 4px 0 #000}
+
+#worldCanvas{display:block;image-rendering:pixelated;transform:translateZ(0)}
+.canvasFrame{overflow:hidden}
