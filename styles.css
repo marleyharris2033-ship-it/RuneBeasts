@@ -18,3 +18,12 @@
 
 #worldCanvas{display:block;image-rendering:pixelated;transform:translateZ(0)}
 .canvasFrame{overflow:hidden}
+
+
+/* Keep canvas scaling on exact pixel multiples so tile edges stay clean. */
+.canvasFrame{width:328px;max-width:100%;margin-left:auto;margin-right:auto;background:#78b85f}
+#worldCanvas{width:320px;max-width:100%;height:auto;background:#78b85f;image-rendering:pixelated}
+@media(min-width:700px){
+  .canvasFrame{width:648px;max-width:648px}
+  #worldCanvas{width:640px;max-width:640px}
+}
