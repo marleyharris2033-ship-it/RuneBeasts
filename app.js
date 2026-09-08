@@ -224,7 +224,7 @@ function defaultLearnset(type){
   return byType[type]||[[1,'Scratch']];
 }
 function knownMoves(m){const beast=beastBy(m.id);const set=LEARNSETS[m.id]||defaultLearnset(beast?.type);return set.filter(([lv])=>lv<=m.level).map(x=>x[1]).slice(-4)} function makeMon(id,level){const m={uid:String(Date.now())+Math.random(),id,level,xp:0,hp:0}; m.hp=maxHp(m); return m;}
-function normaliseState(){state.party=Array.isArray(state.party)?state.party:[]; state.collection=state.collection||{}; state.shards=Number.isFinite(+state.shards)?+state.shards:100; state.wins=state.wins||0; state.captures=state.captures||0; state.steps=state.steps||0; state.pos=state.pos||{x:(WORLD_SPAWN.tx+.5)*TILE,y:(WORLD_SPAWN.ty+.5)*TILE}; state.dir=state.dir||'down'; state.trainerName=(state.trainerName||'Trainer').slice(0,14); state.trainerGender=state.trainerGender==='girl'?'girl':'boy'; state.flags=state.flags||{}; state.inventory=state.inventory||{runeSeal:5,greaterSeal:1,tonic:2,reviveRoot:1}; for(const k of Object.keys(SHOP_ITEMS)) state.inventory[k]=Math.max(0,+state.inventory[k]||0); state.captureCounts=state.captureCounts||{}; if(state.flags.worldLayout!==15){state.pos={x:(WORLD_SPAWN.tx+.5)*TILE,y:(WORLD_SPAWN.ty+.5)*TILE};state.flags.worldLayout=15;} state.party.forEach(m=>{m.level=m.level||1; m.xp=m.xp||0; m.hp=Number.isFinite(m.hp)?clamp(m.hp,0,maxHp(m)):maxHp(m);});}
+function normaliseState(){state.party=Array.isArray(state.party)?state.party:[]; state.collection=state.collection||{}; state.shards=Number.isFinite(+state.shards)?+state.shards:100; state.wins=state.wins||0; state.captures=state.captures||0; state.steps=state.steps||0; state.pos=state.pos||{x:(WORLD_SPAWN.tx+.5)*TILE,y:(WORLD_SPAWN.ty+.5)*TILE}; state.dir=state.dir||'down'; state.trainerName=(state.trainerName||'Trainer').slice(0,14); state.trainerGender=state.trainerGender==='girl'?'girl':'boy'; state.flags=state.flags||{}; state.inventory=state.inventory||{runeSeal:5,greaterSeal:1,tonic:2,reviveRoot:1}; for(const k of Object.keys(SHOP_ITEMS)) state.inventory[k]=Math.max(0,+state.inventory[k]||0); state.captureCounts=state.captureCounts||{}; if(state.flags.worldLayout!==20){state.pos={x:(WORLD_SPAWN.tx+.5)*TILE,y:(WORLD_SPAWN.ty+.5)*TILE};state.flags.worldLayout=20;} state.party.forEach(m=>{m.level=m.level||1; m.xp=m.xp||0; m.hp=Number.isFinite(m.hp)?clamp(m.hp,0,maxHp(m)):maxHp(m);});}
 function save(){normaliseState(); localStorage.setItem(SAVE_KEY,JSON.stringify(state)); renderWorldPanels();} function load(){const raw=localStorage.getItem(SAVE_KEY); if(!raw) return false; try{state=JSON.parse(raw); normaliseState(); return true;}catch{return false;}}
 function typeTag(type){return `<span class="typeTag" style="background:${typeColors[type]||typeColors.Neutral}">${type}</span>`}
 const PROC_SPRITES={};
@@ -263,7 +263,7 @@ function proceduralBeastSprite(id){
 function creatureArt(id,size='md'){const b=beastBy(id),path=SPRITES[id],cls=size==='lg'?'sprite-lg':size==='sm'?'sprite-sm':'sprite-md';const src=path?assetUrl(path):proceduralBeastSprite(id);return `<img class="creatureImg ${cls}" src="${src}" alt="${b.name}" loading="eager">`;}
 function trainerPreview(gender,size=56){return `<img src="${assetUrl(TRAINER_FRAMES[gender].down[0])}" alt="${gender} trainer" style="width:${size}px;height:${size}px;image-rendering:pixelated">`;}
 function showScreen(id){$$('.screen').forEach(el=>el.classList.remove('active')); const t=$('#'+id); if(t) t.classList.add('active'); $$('.bottomNav button').forEach(btn=>btn.classList.toggle('active',btn.dataset.screen===id)); if(id==='partyScreen') renderParty(); if(id==='dexScreen') renderDex(); if(id==='profileScreen') renderProfile(); if(id==='shopScreen') renderShop(); if(id==='mapScreen') renderMap(); if(id==='worldScreen') renderWorldPanels();}
-function renderStarters(){$('#starterChoices').innerHTML=STARTERS.map(id=>{const beast=beastBy(id), temp=makeMon(id,5); return `<div class="card"><div class="spriteWrap">${creatureArt(id,'lg')}</div><h3>${beast.name}</h3>${typeTag(beast.type)}<div class="muted">${beast.role}</div><div class="movesList">Moves: ${knownMoves(temp).join(' · ')}</div><button class="primary big chooseStarter" data-id="${id}">Choose</button></div>`;}).join(''); $$('.chooseStarter').forEach(btn=>btn.onclick=()=>{const mon=makeMon(btn.dataset.id,5); state={party:[mon],collection:{[mon.id]:true},shards:100,wins:0,captures:0,steps:0,pos:{x:(10+0.5)*TILE,y:(22+0.5)*TILE},dir:'down',trainerName:pendingSetup.trainerName||'Trainer',trainerGender:pendingSetup.trainerGender||'boy',flags:{},inventory:{runeSeal:5,greaterSeal:1,tonic:2,reviveRoot:1},captureCounts:{}}; save(); showScreen('worldScreen');});}
+function renderStarters(){$('#starterChoices').innerHTML=STARTERS.map(id=>{const beast=beastBy(id), temp=makeMon(id,5); return `<div class="card"><div class="spriteWrap">${creatureArt(id,'lg')}</div><h3>${beast.name}</h3>${typeTag(beast.type)}<div class="muted">${beast.role}</div><div class="movesList">Moves: ${knownMoves(temp).join(' · ')}</div><button class="primary big chooseStarter" data-id="${id}">Choose</button></div>`;}).join(''); $$('.chooseStarter').forEach(btn=>btn.onclick=()=>{const mon=makeMon(btn.dataset.id,5); state={party:[mon],collection:{[mon.id]:true},shards:100,wins:0,captures:0,steps:0,pos:{x:(WORLD_SPAWN.tx+.5)*TILE,y:(WORLD_SPAWN.ty+.5)*TILE},dir:'down',trainerName:pendingSetup.trainerName||'Trainer',trainerGender:pendingSetup.trainerGender||'boy',flags:{},inventory:{runeSeal:5,greaterSeal:1,tonic:2,reviveRoot:1},captureCounts:{}}; save(); showScreen('worldScreen');});}
 function renderBag(){
   const target=$('#bagList'); if(!target)return;
   target.innerHTML=Object.entries(SHOP_ITEMS).map(([id,it])=>`<div class="bagRow"><span><b>${it.name}</b><small>${it.desc}</small></span><strong>× ${state.inventory[id]||0}</strong></div>`).join('');
@@ -386,24 +386,40 @@ function areaFor(tx,ty){
   return'Runevale Town';
 }
 
-function enterInterior(id){
+function enterInterior(id,building=null){
   if(activeInterior)return;
-  returnPos={x:state.pos.x,y:state.pos.y,dir:state.dir};
+  returnPos=building
+    ? {x:(building.doorX+.5)*TILE,y:(building.doorY+1.45)*TILE,dir:'down'}
+    : {x:state.pos.x,y:state.pos.y,dir:state.dir};
   activeInterior=id;
-  state.pos={x:10.5*TILE,y:12.5*TILE};
+  state.pos={x:10.5*TILE,y:12.1*TILE};
   state.dir='up';
   world.camera.x=world.camera.y=0;
   world.lastTileKey='';
-  worldSay(id==='clinic'?'Rune Clinic — talk to the attendant or use the counter.':'Rowan’s Workshop — maps and Rune tools line the walls.',3200);
+  if(id==='clinic')worldSay('Rune Clinic — walk up to the counter for care.',2600);
+  else if(id==='workshop')worldSay('Rowan’s Workshop — maps, tools and Rune research fill the room.',2600);
+  else if(id==='inn')worldSay('Moonbell Inn — a warm place to rest before heading out.',2600);
 }
 function exitInterior(){
   if(!activeInterior||!returnPos)return;
   activeInterior=null;
   state.pos={x:returnPos.x,y:returnPos.y};
-  state.dir='down';
+  state.dir=returnPos.dir||'down';
   returnPos=null;
   world.lastTileKey='';
-  worldSay('Back outside in Runevale.',1800);
+  worldSay('Back outside in Runevale.',1400);
+}
+function autoEnterBuilding(tx,ty){
+  const b=BUILDINGS.find(b=>b.enterable&&b.doorX===tx&&b.doorY===ty);
+  if(!b)return false;
+  if(b.interior==='shop'){
+    state.pos={x:(b.doorX+.5)*TILE,y:(b.doorY+1.45)*TILE};
+    state.dir='down';
+    showScreen('shopScreen');renderShop();
+    return true;
+  }
+  enterInterior(b.interior,b);
+  return true;
 }
 
 function nearestBuildingDoor(){
@@ -429,6 +445,10 @@ function interactWorld(){
         worldSay('Rowan: Eastbank is beyond the river. Check the old mine when you are ready.');return;
       }
       worldSay('Tools, maps and half-finished Rune devices cover the benches.');return;
+    }
+    if(activeInterior==='inn'){
+      if(ty<=6){healParty(false);worldSay('Innkeeper: Your whole party is rested and ready.');return;}
+      worldSay('The Moonbell Inn is warm, quiet and full of travellers’ stories.');return;
     }
   }
 
@@ -471,7 +491,7 @@ function interactWorld(){
 
 function passiveWorldMessage(tx,ty){
   if(performance.now()<world.messageUntil)return;
-  if(activeInterior){$('#worldText').textContent=activeInterior==='clinic'?'Rune Clinic — A to use the counter, or move to the doorway to leave.':'Rowan’s Workshop — A near the counter to talk, or move to the doorway to leave.';return;}
+  if(activeInterior){$('#worldText').textContent=activeInterior==='clinic'?'Rune Clinic — walk to the counter for healing; step onto the doorway to leave.':activeInterior==='inn'?'Moonbell Inn — rest at the counter or step onto the doorway to leave.':'Rowan’s Workshop — A near the counter to talk; step onto the doorway to leave.';return;}
   const g=groundAt(tx,ty);
   if(g==='g'){$('#worldText').textContent='Tall grass rustles nearby — wild Rune Beasts live here.';return;}
   if(tx>=73){
@@ -499,6 +519,7 @@ function updateWorld(dt){
   $('.areaName').textContent=areaFor(tx,ty);
 
   if(activeInterior){
+    if(ty>=12&&tx>=8&&tx<=12){exitInterior();return;}
     passiveWorldMessage(tx,ty);
     return;
   }
@@ -507,6 +528,7 @@ function updateWorld(dt){
   if(tileKey!==world.lastTileKey){
     world.lastTileKey=tileKey;
     const g=groundAt(tx,ty),o=objAt(tx,ty);
+    if(autoEnterBuilding(tx,ty))return;
     if(HEAL_GROUND.has(g)){healParty(false);worldSay('The Rune fountain restored your party.',1800);}
     else if(SAVE_OBJECT.has(o)){save();worldSay('Progress saved at the Rune crystal.',1800);}
     else if(ENCOUNTER_GROUND.has(g)&&world.encounterDistance>30&&Math.random()<.10){world.encounterDistance=0;startBattle(pickEncounter());return;}
