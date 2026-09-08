@@ -442,7 +442,7 @@ function enterCave(){
   if(activeInterior)return;
   caveReturnPos={x:(106.5)*TILE,y:(67.6)*TILE,dir:'down'};
   activeInterior='cave';
-  state.pos={x:1.5*TILE,y:2.5*TILE};
+  state.pos={x:1.5*TILE,y:3.5*TILE};
   state.dir='up';
   caveEncounterDistance=0;
   world.camera.x=world.camera.y=0;
@@ -511,7 +511,7 @@ function interactWorld(){
 
   if(activeInterior==='cave'){
     const {tx,ty}=currentTile();
-    if(tx===1&&ty<=3){exitCave();return;}
+    if(tx===1&&ty===1){exitCave();return;}
     if(caveBossVisible&&!state.flags.caveBossDefeated&&Math.hypot(tx-CAVE_BOSS.tx,ty-CAVE_BOSS.ty)<3){startCaveBoss();return;}
     worldSay('The cave walls echo. The maze continues deeper...',1800);return;
   }
@@ -614,7 +614,7 @@ function updateWorld(dt){
   if(activeInterior==='cave'){
     const movedNow=moving?Math.hypot(vx*world.playerSpeed*dt,vy*world.playerSpeed*dt):0;
     if(movedNow>0)caveEncounterDistance+=movedNow;
-    if(tx===1&&ty<=2&&state.dir==='up'){exitCave();return;}
+    if(tx===1&&ty===1){exitCave();return;}
     if(caveBossVisible&&!state.flags.caveBossDefeated&&Math.hypot(tx-CAVE_BOSS.tx,ty-CAVE_BOSS.ty)<=1.4){startCaveBoss();return;}
     const caveKey=tx+','+ty;
     if(caveKey!==world.lastTileKey){
