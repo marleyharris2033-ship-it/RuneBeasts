@@ -43,3 +43,11 @@
 #shopScreen .panel:first-of-type{margin-top:8px}
 #mainBattleMenu.actions{grid-template-columns:1fr 1fr}
 .masteryLine{margin-top:7px;padding-top:7px;border-top:1px dashed var(--line);font-size:11px;color:var(--gold)}
+
+.bottomNav{grid-template-columns:repeat(5,1fr)}
+.bottomNav button{font-size:11px;padding:13px 2px}
+#mapCanvas{display:block;width:100%;height:auto;border:3px solid var(--ink);background:#6fa95a;image-rendering:pixelated}
+.mapLegend{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;font-size:11px;color:var(--muted)}
+.mapDot{display:inline-block;width:10px;height:10px;border:1px solid #fff;margin-right:4px;vertical-align:-1px}
+.playerDot{background:#fff}.marketDot{background:#e2bd45}.clinicDot{background:#d9646c}.workshopDot{background:#9b6c46}.landmarkDot{background:#6e6253}
+.mapHint{margin-bottom:0}
