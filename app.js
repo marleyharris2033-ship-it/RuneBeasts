@@ -4,6 +4,12 @@ const BEASTS=[{"id": "cindercub", "name": "Cindercub", "type": "Fire", "rarity":
 const MOVES={"Scratch": {"type": "Neutral", "power": 35, "acc": 100}, "Quick Jab": {"type": "Neutral", "power": 30, "acc": 100}, "Guard Break": {"type": "Neutral", "power": 50, "acc": 90}, "Ember Bite": {"type": "Fire", "power": 45, "acc": 100}, "Flame Rush": {"type": "Fire", "power": 60, "acc": 90}, "Heat Wave": {"type": "Fire", "power": 70, "acc": 85}, "Water Jet": {"type": "Water", "power": 45, "acc": 100}, "Tidal Slam": {"type": "Water", "power": 60, "acc": 90}, "Bubble Burst": {"type": "Water", "power": 55, "acc": 95}, "Leaf Swipe": {"type": "Grass", "power": 45, "acc": 100}, "Vine Lash": {"type": "Grass", "power": 60, "acc": 90}, "Spore Burst": {"type": "Grass", "power": 55, "acc": 95}, "Spark Snap": {"type": "Electric", "power": 45, "acc": 100}, "Volt Rush": {"type": "Electric", "power": 60, "acc": 90}, "Arc Pulse": {"type": "Electric", "power": 70, "acc": 85}, "Gust": {"type": "Flying", "power": 45, "acc": 100}, "Sky Dive": {"type": "Flying", "power": 60, "acc": 90}, "Wind Cutter": {"type": "Flying", "power": 55, "acc": 95}, "Stone Toss": {"type": "Rock", "power": 45, "acc": 100}, "Rock Ram": {"type": "Rock", "power": 60, "acc": 90}, "Crystal Crash": {"type": "Rock", "power": 70, "acc": 85}};
 const LEARNSETS={"cindercub": [[1, "Scratch"], [3, "Ember Bite"], [8, "Quick Jab"], [12, "Flame Rush"], [20, "Guard Break"], [28, "Heat Wave"]], "ashbit": [[1, "Scratch"], [3, "Ember Bite"], [8, "Quick Jab"], [12, "Flame Rush"], [20, "Guard Break"], [28, "Heat Wave"]], "magmole": [[1, "Scratch"], [3, "Ember Bite"], [8, "Quick Jab"], [12, "Flame Rush"], [20, "Guard Break"], [28, "Heat Wave"]], "flarewing": [[1, "Scratch"], [3, "Ember Bite"], [8, "Quick Jab"], [12, "Flame Rush"], [20, "Guard Break"], [28, "Heat Wave"]], "ripplet": [[1, "Scratch"], [3, "Water Jet"], [8, "Quick Jab"], [12, "Bubble Burst"], [20, "Guard Break"], [28, "Tidal Slam"]], "bubbfin": [[1, "Scratch"], [3, "Water Jet"], [8, "Quick Jab"], [12, "Bubble Burst"], [20, "Guard Break"], [28, "Tidal Slam"]], "cragclaw": [[1, "Scratch"], [3, "Water Jet"], [8, "Quick Jab"], [12, "Bubble Burst"], [20, "Guard Break"], [28, "Tidal Slam"]], "abyssquid": [[1, "Scratch"], [3, "Water Jet"], [8, "Quick Jab"], [12, "Bubble Burst"], [20, "Guard Break"], [28, "Tidal Slam"]], "spriglet": [[1, "Scratch"], [3, "Leaf Swipe"], [8, "Quick Jab"], [12, "Spore Burst"], [20, "Guard Break"], [28, "Vine Lash"]], "mossbug": [[1, "Scratch"], [3, "Leaf Swipe"], [8, "Quick Jab"], [12, "Spore Burst"], [20, "Guard Break"], [28, "Vine Lash"]], "vineape": [[1, "Scratch"], [3, "Leaf Swipe"], [8, "Quick Jab"], [12, "Spore Burst"], [20, "Guard Break"], [28, "Vine Lash"]], "bloomhorn": [[1, "Scratch"], [3, "Leaf Swipe"], [8, "Quick Jab"], [12, "Spore Burst"], [20, "Guard Break"], [28, "Vine Lash"]], "voltpup": [[1, "Scratch"], [3, "Spark Snap"], [8, "Quick Jab"], [12, "Volt Rush"], [20, "Guard Break"], [28, "Arc Pulse"]], "sparkit": [[1, "Scratch"], [3, "Spark Snap"], [8, "Quick Jab"], [12, "Volt Rush"], [20, "Guard Break"], [28, "Arc Pulse"]], "thundram": [[1, "Scratch"], [3, "Spark Snap"], [8, "Quick Jab"], [12, "Volt Rush"], [20, "Guard Break"], [28, "Arc Pulse"]], "arcwing": [[1, "Scratch"], [3, "Spark Snap"], [8, "Quick Jab"], [12, "Volt Rush"], [20, "Guard Break"], [28, "Arc Pulse"]], "breezlet": [[1, "Scratch"], [3, "Gust"], [8, "Quick Jab"], [12, "Wind Cutter"], [20, "Guard Break"], [28, "Sky Dive"]], "galehare": [[1, "Scratch"], [3, "Gust"], [8, "Quick Jab"], [12, "Wind Cutter"], [20, "Guard Break"], [28, "Sky Dive"]], "skyrake": [[1, "Scratch"], [3, "Gust"], [8, "Quick Jab"], [12, "Wind Cutter"], [20, "Guard Break"], [28, "Sky Dive"]], "stormowl": [[1, "Scratch"], [3, "Gust"], [8, "Quick Jab"], [12, "Wind Cutter"], [20, "Guard Break"], [28, "Sky Dive"]], "pebblit": [[1, "Scratch"], [3, "Stone Toss"], [8, "Quick Jab"], [12, "Rock Ram"], [20, "Guard Break"], [28, "Crystal Crash"]], "craggoat": [[1, "Scratch"], [3, "Stone Toss"], [8, "Quick Jab"], [12, "Rock Ram"], [20, "Guard Break"], [28, "Crystal Crash"]], "gemscarab": [[1, "Scratch"], [3, "Stone Toss"], [8, "Quick Jab"], [12, "Rock Ram"], [20, "Guard Break"], [28, "Crystal Crash"]], "titanox": [[1, "Scratch"], [3, "Stone Toss"], [8, "Quick Jab"], [12, "Rock Ram"], [20, "Guard Break"], [28, "Crystal Crash"]]};
 const STARTERS=["cindercub","ripplet","spriglet"];
+const SHOP_ITEMS={
+  runeSeal:{name:'Rune Seal',price:12,desc:'Standard binding seal for catching wild Rune Beasts.'},
+  greaterSeal:{name:'Greater Rune Seal',price:30,desc:'Improved seal with a noticeably better binding chance.'},
+  tonic:{name:'Verdant Tonic',price:10,desc:'Restores 35 HP to one Rune Beast.'},
+  reviveRoot:{name:'Revival Root',price:24,desc:'Revives one fainted Rune Beast at 50% HP.'}
+};
 const SAVE_KEY="runebeasts-v09";
 const ASSET_BUNDLES=Object.assign({},window.RUNE_BEAST_ASSETS||{},window.RUNE_TILE_ASSETS||{},window.RUNE_OBJECT_ASSETS||{},window.RUNE_TRAINER_ASSETS||{},window.RUNE_TOWN_ASSETS||{});
 const assetUrl=src=>ASSET_BUNDLES[src]||src;
@@ -133,7 +139,7 @@ const TILESET={
 'wr':'tile_grass_v2.png'
 };
 const BUILDINGS=[
-  {id:'guild',name:'Rune Lodge',tx:24,ty:8,w:11,h:8,doorX:29,doorY:15,roof:'#a94e42',roof2:'#d06a51',wall:'#e8cf9a',trim:'#744438',enterable:false},
+  {id:'guild',name:'Rune Market',tx:24,ty:8,w:11,h:8,doorX:29,doorY:15,roof:'#a94e42',roof2:'#d06a51',wall:'#e8cf9a',trim:'#744438',enterable:true,interior:'shop'},
   {id:'homeA',name:'Maple House',tx:12,ty:11,w:9,h:7,doorX:16,doorY:17,roof:'#b65445',roof2:'#da7157',wall:'#ead6a7',trim:'#754536',enterable:false},
   {id:'homeB',name:'Willow House',tx:40,ty:11,w:9,h:7,doorX:44,doorY:17,roof:'#4e728f',roof2:'#6f98b5',wall:'#e6d4aa',trim:'#435264',enterable:false},
   {id:'workshop',name:'Rowan’s Workshop',tx:50,ty:28,w:10,h:8,doorX:55,doorY:35,roof:'#7c5a3e',roof2:'#a17b58',wall:'#d9c39c',trim:'#594332',enterable:true,interior:'workshop'},
@@ -172,21 +178,55 @@ const ENCOUNTER_GROUND=new Set(['g']);
 const HEAL_GROUND=new Set([]); 
 const SAVE_OBJECT=new Set(['sv']);
 
-let state={party:[],collection:{},shards:100,wins:0,captures:0,steps:0,pos:{x:(WORLD_SPAWN.tx+.5)*TILE,y:(WORLD_SPAWN.ty+.5)*TILE},dir:'down',trainerName:'Trainer',trainerGender:'boy',flags:{}};
+let state={party:[],collection:{},shards:100,wins:0,captures:0,steps:0,pos:{x:(WORLD_SPAWN.tx+.5)*TILE,y:(WORLD_SPAWN.ty+.5)*TILE},dir:'down',trainerName:'Trainer',trainerGender:'boy',flags:{},inventory:{runeSeal:5,greaterSeal:1,tonic:2,reviveRoot:1},captureCounts:{}};
 let pendingSetup={trainerName:'Trainer',trainerGender:'boy'}; let battle=null;
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)]; const beastBy=id=>BEASTS.find(b=>b.id===id); const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)); const xpNeed=lv=>30+lv*20; const typeColors={Fire:'#b94b39',Water:'#3678bb',Grass:'#4e8c49',Electric:'#b69525',Flying:'#687fb8',Rock:'#786f67',Neutral:'#596680'};
+function addXp(m,amount){
+  if(!m||amount<=0)return 0;
+  let levels=0;m.xp=(m.xp||0)+amount;
+  while(m.level<50&&m.xp>=xpNeed(m.level)){m.xp-=xpNeed(m.level);m.level+=1;m.hp=maxHp(m);levels++;}
+  return levels;
+}
+function grantPartyXp(amount){state.party.forEach(m=>addXp(m,amount));}
+function captureMilestoneReward(id){
+  const count=state.captureCounts[id]||0;
+  if(count<5||count%5!==0)return '';
+  const tier=count/5;
+  const xp=25+tier*15;
+  grantPartyXp(xp);
+  state.inventory.runeSeal+=2;
+  if(tier%2===0)state.inventory.greaterSeal+=1;
+  state.shards+=10+tier*5;
+  return ` Species mastery! ${count} ${beastBy(id).name} bound — whole party +${xp} XP, +2 Rune Seals${tier%2===0?', +1 Greater Seal':''}, +${10+tier*5} shards.`;
+}
 function maxHp(m){return Math.round(beastBy(m.id).base[0]*0.7+m.level*5+20)} function statsFor(m){const b=beastBy(m.id).base;return [maxHp(m),...b.slice(1).map(v=>Math.round(v*0.65+m.level*2))]} function knownMoves(m){const set=LEARNSETS[m.id]||[[1,'Scratch']];return set.filter(([lv])=>lv<=m.level).map(x=>x[1]).slice(-4)} function makeMon(id,level){const m={uid:String(Date.now())+Math.random(),id,level,xp:0,hp:0}; m.hp=maxHp(m); return m;}
-function normaliseState(){state.party=Array.isArray(state.party)?state.party:[]; state.collection=state.collection||{}; state.shards=Number.isFinite(+state.shards)?+state.shards:100; state.wins=state.wins||0; state.captures=state.captures||0; state.steps=state.steps||0; state.pos=state.pos||{x:(WORLD_SPAWN.tx+.5)*TILE,y:(WORLD_SPAWN.ty+.5)*TILE}; state.dir=state.dir||'down'; state.trainerName=(state.trainerName||'Trainer').slice(0,14); state.trainerGender=state.trainerGender==='girl'?'girl':'boy'; state.flags=state.flags||{}; if(state.flags.worldLayout!==15){state.pos={x:(WORLD_SPAWN.tx+.5)*TILE,y:(WORLD_SPAWN.ty+.5)*TILE};state.flags.worldLayout=15;} state.party.forEach(m=>{m.level=m.level||1; m.xp=m.xp||0; m.hp=Number.isFinite(m.hp)?clamp(m.hp,0,maxHp(m)):maxHp(m);});}
+function normaliseState(){state.party=Array.isArray(state.party)?state.party:[]; state.collection=state.collection||{}; state.shards=Number.isFinite(+state.shards)?+state.shards:100; state.wins=state.wins||0; state.captures=state.captures||0; state.steps=state.steps||0; state.pos=state.pos||{x:(WORLD_SPAWN.tx+.5)*TILE,y:(WORLD_SPAWN.ty+.5)*TILE}; state.dir=state.dir||'down'; state.trainerName=(state.trainerName||'Trainer').slice(0,14); state.trainerGender=state.trainerGender==='girl'?'girl':'boy'; state.flags=state.flags||{}; state.inventory=state.inventory||{runeSeal:5,greaterSeal:1,tonic:2,reviveRoot:1}; for(const k of Object.keys(SHOP_ITEMS)) state.inventory[k]=Math.max(0,+state.inventory[k]||0); state.captureCounts=state.captureCounts||{}; if(state.flags.worldLayout!==15){state.pos={x:(WORLD_SPAWN.tx+.5)*TILE,y:(WORLD_SPAWN.ty+.5)*TILE};state.flags.worldLayout=15;} state.party.forEach(m=>{m.level=m.level||1; m.xp=m.xp||0; m.hp=Number.isFinite(m.hp)?clamp(m.hp,0,maxHp(m)):maxHp(m);});}
 function save(){normaliseState(); localStorage.setItem(SAVE_KEY,JSON.stringify(state)); renderWorldPanels();} function load(){const raw=localStorage.getItem(SAVE_KEY); if(!raw) return false; try{state=JSON.parse(raw); normaliseState(); return true;}catch{return false;}}
 function typeTag(type){return `<span class="typeTag" style="background:${typeColors[type]||typeColors.Neutral}">${type}</span>`}
 function creatureArt(id,size='md'){const b=beastBy(id), path=SPRITES[id]; if(path){const cls=size==='lg'?'sprite-lg':size==='sm'?'sprite-sm':'sprite-md'; return `<img class="creatureImg ${cls}" src="${assetUrl(path)}" alt="${b.name}" loading="eager">`;} const cls=size==='lg'?'':size==='sm'?' sm':' md'; return `<div class="fallbackSprite${cls}">${b.glyph}</div>`;}
 function trainerPreview(gender,size=56){return `<img src="${assetUrl(TRAINER_FRAMES[gender].down[0])}" alt="${gender} trainer" style="width:${size}px;height:${size}px;image-rendering:pixelated">`;}
-function showScreen(id){$$('.screen').forEach(el=>el.classList.remove('active')); const t=$('#'+id); if(t) t.classList.add('active'); $$('.bottomNav button').forEach(btn=>btn.classList.toggle('active',btn.dataset.screen===id)); if(id==='partyScreen') renderParty(); if(id==='dexScreen') renderDex(); if(id==='profileScreen') renderProfile(); if(id==='worldScreen') renderWorldPanels();}
-function renderStarters(){$('#starterChoices').innerHTML=STARTERS.map(id=>{const beast=beastBy(id), temp=makeMon(id,5); return `<div class="card"><div class="spriteWrap">${creatureArt(id,'lg')}</div><h3>${beast.name}</h3>${typeTag(beast.type)}<div class="muted">${beast.role}</div><div class="movesList">Moves: ${knownMoves(temp).join(' · ')}</div><button class="primary big chooseStarter" data-id="${id}">Choose</button></div>`;}).join(''); $$('.chooseStarter').forEach(btn=>btn.onclick=()=>{const mon=makeMon(btn.dataset.id,5); state={party:[mon],collection:{[mon.id]:true},shards:100,wins:0,captures:0,steps:0,pos:{x:(10+0.5)*TILE,y:(22+0.5)*TILE},dir:'down',trainerName:pendingSetup.trainerName||'Trainer',trainerGender:pendingSetup.trainerGender||'boy',flags:{}}; save(); showScreen('worldScreen');});}
+function showScreen(id){$$('.screen').forEach(el=>el.classList.remove('active')); const t=$('#'+id); if(t) t.classList.add('active'); $$('.bottomNav button').forEach(btn=>btn.classList.toggle('active',btn.dataset.screen===id)); if(id==='partyScreen') renderParty(); if(id==='dexScreen') renderDex(); if(id==='profileScreen') renderProfile(); if(id==='shopScreen') renderShop(); if(id==='worldScreen') renderWorldPanels();}
+function renderStarters(){$('#starterChoices').innerHTML=STARTERS.map(id=>{const beast=beastBy(id), temp=makeMon(id,5); return `<div class="card"><div class="spriteWrap">${creatureArt(id,'lg')}</div><h3>${beast.name}</h3>${typeTag(beast.type)}<div class="muted">${beast.role}</div><div class="movesList">Moves: ${knownMoves(temp).join(' · ')}</div><button class="primary big chooseStarter" data-id="${id}">Choose</button></div>`;}).join(''); $$('.chooseStarter').forEach(btn=>btn.onclick=()=>{const mon=makeMon(btn.dataset.id,5); state={party:[mon],collection:{[mon.id]:true},shards:100,wins:0,captures:0,steps:0,pos:{x:(10+0.5)*TILE,y:(22+0.5)*TILE},dir:'down',trainerName:pendingSetup.trainerName||'Trainer',trainerGender:pendingSetup.trainerGender||'boy',flags:{},inventory:{runeSeal:5,greaterSeal:1,tonic:2,reviveRoot:1},captureCounts:{}}; save(); showScreen('worldScreen');});}
+function renderBag(){
+  const target=$('#bagList'); if(!target)return;
+  target.innerHTML=Object.entries(SHOP_ITEMS).map(([id,it])=>`<div class="bagRow"><span><b>${it.name}</b><small>${it.desc}</small></span><strong>× ${state.inventory[id]||0}</strong></div>`).join('');
+}
+function renderShop(){
+  if(!$('#shopList'))return;
+  $('#shopShards').textContent=state.shards;
+  $('#shopList').innerHTML=Object.entries(SHOP_ITEMS).map(([id,it])=>`<div class="shopItem"><div><b>${it.name}</b><small>${it.desc}</small></div><button class="secondary buyItem" data-item="${id}">✦ ${it.price}</button></div>`).join('');
+  renderBag();
+  $('.buyItem').forEach(btn=>btn.onclick=()=>buyShopItem(btn.dataset.item));
+}
+function buyShopItem(id){
+  const it=SHOP_ITEMS[id]; if(!it)return;
+  if(state.shards<it.price){alert('Not enough Rune Shards.');return;}
+  state.shards-=it.price; state.inventory[id]=(state.inventory[id]||0)+1; save(); renderShop();
+}
 function renderWorldPanels(){if(!$('#shards')) return; $('#shards').textContent=state.shards; $('#partyCount').textContent=`${state.party.length} / 6`; $('#partyMini').innerHTML=state.party.map((m,i)=>`<div class="partyMiniRow"><span>${i===0?'★ ':''}${beastBy(m.id).name} Lv${m.level} · ${m.hp}/${maxHp(m)} HP</span><span>${typeTag(beastBy(m.id).type)}</span></div>`).join(''); $('#trainerBadge').innerHTML=`<span class="badgeName">${state.trainerName}</span>`;}
 function renderParty(){$('#partyList').innerHTML=state.party.map((m,i)=>{const b=beastBy(m.id), pct=clamp(m.xp/xpNeed(m.level)*100,0,100); return `<div class="card partyCard"><div class="head"><div class="lhs">${creatureArt(m.id,'md')}<div><b>${b.name}</b><div>${typeTag(b.type)}</div></div></div><b>Lv ${m.level}</b></div><div class="stats">HP ${m.hp}/${maxHp(m)} · ATK ${statsFor(m)[1]} · DEF ${statsFor(m)[2]} · SP.ATK ${statsFor(m)[3]} · SP.DEF ${statsFor(m)[4]} · SPD ${statsFor(m)[5]}</div><div class="movesList">Moves: ${knownMoves(m).join(' · ')}</div><div class="xpBar"><i style="width:${pct}%"></i></div><small>XP ${m.xp}/${xpNeed(m.level)}</small>${i?`<button class="secondary makeLead" data-i="${i}">Make Lead</button>`:`<div class="movesList"><b>Lead Beast</b></div>`}</div>`;}).join(''); $$('.makeLead').forEach(btn=>btn.onclick=()=>{const i=+btn.dataset.i; const picked=state.party.splice(i,1)[0]; state.party.unshift(picked); save(); renderParty();});}
-function renderDex(){const seen=BEASTS.filter(b=>state.collection[b.id]).length; $('#dexProgress').textContent=`${seen} / ${BEASTS.length} discovered`; $('#dexList').innerHTML=BEASTS.map((b,i)=>{const discovered=!!state.collection[b.id]; return `<div class="card"><div class="spriteWrap">${discovered?creatureArt(b.id,'sm'):`<div class="fallbackSprite sm">?</div>`}</div><small>#${String(i+1).padStart(3,'0')}</small><div><b>${discovered?b.name:'?????'}</b></div><div>${discovered?typeTag(b.type):''}</div><small>${discovered?`${b.rarity} · ${b.role}`:'Undiscovered'}</small></div>`;}).join('');}
-function renderProfile(){$('#profileSprite').innerHTML=trainerPreview(state.trainerGender,56); $('#profileName').textContent=state.trainerName; $('#profileGender').textContent=state.trainerGender==='girl'?'Girl trainer':'Boy trainer'; $('#saveStats').innerHTML=`<p>Wins: <b>${state.wins}</b></p><p>Captured: <b>${state.captures}</b></p><p>Discovered: <b>${Object.keys(state.collection).length}/${BEASTS.length}</b></p><p>Steps: <b>${state.steps}</b></p><p>Rune Shards: <b>${state.shards}</b></p>`;}
+function renderDex(){const seen=BEASTS.filter(b=>state.collection[b.id]).length; $('#dexProgress').textContent=`${seen} / ${BEASTS.length} discovered`; $('#dexList').innerHTML=BEASTS.map((b,i)=>{const discovered=!!state.collection[b.id]; return `<div class="card"><div class="spriteWrap">${discovered?creatureArt(b.id,'sm'):`<div class="fallbackSprite sm">?</div>`}</div><small>#${String(i+1).padStart(3,'0')}</small><div><b>${discovered?b.name:'?????'}</b></div><div>${discovered?typeTag(b.type):''}</div><small>${discovered?`${b.rarity} · ${b.role} · Bound ×${state.captureCounts[b.id]||0}`:'Undiscovered'}</small></div>`;}).join('');}
+function renderProfile(){$('#profileSprite').innerHTML=trainerPreview(state.trainerGender,56); $('#profileName').textContent=state.trainerName; $('#profileGender').textContent=state.trainerGender==='girl'?'Girl trainer':'Boy trainer'; $('#saveStats').innerHTML=`<p>Wins: <b>${state.wins}</b></p><p>Captured: <b>${state.captures}</b></p><p>Discovered: <b>${Object.keys(state.collection).length}/${BEASTS.length}</b></p><p>Steps: <b>${state.steps}</b></p><p>Rune Shards: <b>${state.shards}</b></p><p>Rune Seals: <b>${state.inventory.runeSeal||0}</b> · Greater: <b>${state.inventory.greaterSeal||0}</b></p><p>Tonics: <b>${state.inventory.tonic||0}</b> · Revival Roots: <b>${state.inventory.reviveRoot||0}</b></p>`;}
 // world
 const canvas=document.getElementById('worldCanvas');
 const ctx=canvas.getContext('2d',{alpha:false});
@@ -321,7 +361,7 @@ function interactWorld(){
 
   const building=nearestBuildingDoor();
   if(building){
-    if(building.enterable){enterInterior(building.interior);return;}
+    if(building.enterable){if(building.interior==='shop'){showScreen('shopScreen');renderShop();return;} enterInterior(building.interior);return;}
     worldSay(building.name+' — the door is closed for now.');return;
   }
 
@@ -583,13 +623,67 @@ function setBattleLock(v){
   $$('#battleScreen button').forEach(btn=>btn.disabled=v);
   if(!v) $$('#battleScreen button').forEach(btn=>btn.disabled=false);
   if(!$('#cancelBattleSubmenu').classList.contains('hidden')) $('#cancelBattleSubmenu').disabled=false;
-} function closeSubmenus(){$('#movesMenu').classList.add('hidden'); $('#switchMenu').classList.add('hidden'); $('#cancelBattleSubmenu').classList.add('hidden'); $('#mainBattleMenu').classList.remove('hidden')}
+} function closeSubmenus(){$('#movesMenu').classList.add('hidden'); $('#switchMenu').classList.add('hidden'); $('#itemMenu').classList.add('hidden'); $('#cancelBattleSubmenu').classList.add('hidden'); $('#mainBattleMenu').classList.remove('hidden')}
 function showMoves(){if(!battle||battle.locked) return; const p=activeMon(); $('#movesMenu').innerHTML=knownMoves(p).map(name=>{const mv=MOVES[name]; return `<button class="moveChoice" data-move="${name}"><b>${name}</b><small>${mv.type} · POW ${mv.power} · ACC ${mv.acc}</small></button>`}).join(''); $('#mainBattleMenu').classList.add('hidden'); $('#movesMenu').classList.remove('hidden'); $('#cancelBattleSubmenu').classList.remove('hidden'); $$('.moveChoice').forEach(btn=>btn.onclick=()=>useMove(btn.dataset.move));}
 function useMove(name){if(!battle||battle.locked) return; closeSubmenus(); setBattleLock(true); const p=activeMon(), e=battle.enemy, result=calcDamage(p,e,name); if(!result.hit){setBattleText(`${beastBy(p.id).name} used ${name}, but missed!`); battleLater(enemyTurn,650); return;} e.hp=Math.max(0,e.hp-result.damage); setBattleText(`${beastBy(p.id).name} used ${name}! ${result.damage} damage.${result.mod>1?' Super effective!':result.mod<1?' Not very effective.':''}`); renderBattle(); battleLater(()=>e.hp<=0?winBattle():enemyTurn(),700)}
 function enemyTurn(){if(!battle) return; const p=activeMon(), e=battle.enemy; if(!p||p.hp<=0){handleFaint(); return;} const pool=knownMoves(e), name=pool[Math.floor(Math.random()*pool.length)]||'Scratch'; const result=calcDamage(e,p,name); if(!result.hit){setBattleText(`${beastBy(e.id).name} used ${name}, but missed!`); battleLater(()=>setBattleLock(false),450); return;} p.hp=Math.max(0,p.hp-result.damage); setBattleText(`${beastBy(e.id).name} used ${name}! ${result.damage} damage.`); renderBattle(); save(); battleLater(()=>p.hp<=0?handleFaint():setBattleLock(false),650)}
 function handleFaint(){if(!battle) return; const cur=activeMon(); if(cur) setBattleText(`${beastBy(cur.id).name} fainted!`); const next=state.party.findIndex((m,i)=>i!==battle.active && m.hp>0); if(next<0){setTimeout(()=>{battle=null; healParty(false); showScreen('worldScreen'); $('#worldText').textContent='Your party recovered at the spring.';},800)} else {battleLater(()=>{battle.active=next; renderBattle(); setBattleText(`${beastBy(activeMon().id).name} steps in!`); setBattleLock(false);},650)}}
 function winBattle(){if(!battle) return; const p=activeMon(); const gain=18+battle.enemy.level*8; p.xp+=gain; state.wins+=1; state.shards+=8; while(p.level<50&&p.xp>=xpNeed(p.level)){p.xp-=xpNeed(p.level); p.level+=1; p.hp=maxHp(p)} setBattleText(`Victory! ${beastBy(p.id).name} gained ${gain} XP.`); battle=null; save(); setTimeout(()=>showScreen('worldScreen'),850)}
-function attemptCapture(){if(!battle||battle.locked) return; if(state.party.length>=6){setBattleText('Your party is full.'); return;} if(state.shards<10){setBattleText('You need 10 Rune Shards.'); return;} setBattleLock(true); state.shards-=10; const e=battle.enemy; const baseChance={Common:0.58,Uncommon:0.44,Rare:0.30,Elite:0.18}[beastBy(e.id).rarity]||0.4; const chance=clamp(baseChance+(1-e.hp/maxHp(e))*0.45,0.12,0.9); if(Math.random()<chance){state.party.push(e); state.collection[e.id]=true; state.captures+=1; setBattleText(`${beastBy(e.id).name} was bound to your rune!`); battle=null; save(); setTimeout(()=>showScreen('worldScreen'),900)} else {setBattleText(`${beastBy(e.id).name} broke free!`); save(); battleLater(enemyTurn,650)}}
+function attemptCapture(sealType='runeSeal'){
+  if(!battle||battle.locked)return;
+  const invKey=sealType==='greaterSeal'?'greaterSeal':'runeSeal';
+  if((state.inventory[invKey]||0)<=0){setBattleText(invKey==='greaterSeal'?'You have no Greater Rune Seals.':'You have no Rune Seals. Visit the Rune Market.');return;}
+  setBattleLock(true);
+  state.inventory[invKey]-=1;
+  const e=battle.enemy;
+  const rarity=beastBy(e.id).rarity;
+  const baseChance={Common:.56,Uncommon:.42,Rare:.28,Elite:.16}[rarity]||.4;
+  const hpBonus=(1-e.hp/maxHp(e))*.46;
+  const sealBonus=invKey==='greaterSeal'?.18:0;
+  const chance=clamp(baseChance+hpBonus+sealBonus,.10,.94);
+  if(Math.random()<chance){
+    const id=e.id, name=beastBy(id).name;
+    state.collection[id]=true;
+    state.captures+=1;
+    state.captureCounts[id]=(state.captureCounts[id]||0)+1;
+    const captureXp=12+e.level*6;
+    grantPartyXp(captureXp);
+    let destination='';
+    if(state.party.length<6){state.party.push(e);destination=' It joined your party.';}
+    else destination=' It was sent to the Rune Lodge reserve.';
+    const milestone=captureMilestoneReward(id);
+    setBattleText(`${name} was bound with a ${SHOP_ITEMS[invKey].name}! Whole party +${captureXp} XP.${destination}${milestone}`);
+    battle=null;save();setTimeout(()=>showScreen('worldScreen'),milestone?2200:1300);
+  }else{
+    setBattleText(`${beastBy(e.id).name} broke free of the ${SHOP_ITEMS[invKey].name}!`);
+    save();battleLater(enemyTurn,650);
+  }
+}
+function showItems(){
+  if(!battle||battle.locked)return;
+  const p=activeMon();
+  $('#itemMenu').innerHTML=[
+    `<button class="itemChoice" data-item="greaterSeal"><b>Greater Rune Seal ×${state.inventory.greaterSeal||0}</b><small>Improved capture chance</small></button>`,
+    `<button class="itemChoice" data-item="tonic"><b>Verdant Tonic ×${state.inventory.tonic||0}</b><small>Restore 35 HP to your active Rune Beast</small></button>`,
+    `<button class="itemChoice" data-item="reviveRoot"><b>Revival Root ×${state.inventory.reviveRoot||0}</b><small>Revive a fainted party member at 50% HP</small></button>`
+  ].join('');
+  $('#mainBattleMenu').classList.add('hidden');$('#itemMenu').classList.remove('hidden');$('#cancelBattleSubmenu').classList.remove('hidden');
+  $$('.itemChoice').forEach(btn=>btn.onclick=()=>useBattleItem(btn.dataset.item));
+}
+function useBattleItem(id){
+  if(!battle||battle.locked)return;
+  if((state.inventory[id]||0)<=0){setBattleText('You do not have that item.');return;}
+  if(id==='greaterSeal'){closeSubmenus();attemptCapture('greaterSeal');return;}
+  if(id==='tonic'){
+    const p=activeMon(); if(p.hp>=maxHp(p)){setBattleText('Your active Rune Beast is already at full HP.');return;}
+    state.inventory.tonic--;p.hp=Math.min(maxHp(p),p.hp+35);closeSubmenus();setBattleLock(true);renderBattle();save();setBattleText(`${beastBy(p.id).name} recovered 35 HP.`);battleLater(enemyTurn,600);return;
+  }
+  if(id==='reviveRoot'){
+    const target=state.party.find(m=>m.hp<=0);
+    if(!target){setBattleText('No fainted Rune Beast needs reviving.');return;}
+    state.inventory.reviveRoot--;target.hp=Math.max(1,Math.round(maxHp(target)*.5));closeSubmenus();setBattleLock(true);save();setBattleText(`${beastBy(target.id).name} was revived to ${target.hp} HP.`);battleLater(enemyTurn,600);
+  }
+}
 function showSwitch(){if(!battle||battle.locked) return; $('#switchMenu').innerHTML=state.party.map((m,i)=>`<button class="switchChoice" data-i="${i}" ${i===battle.active||m.hp<=0?'disabled':''}><span>${beastBy(m.id).name} Lv${m.level}</span><span>${m.hp}/${maxHp(m)} HP</span></button>`).join(''); $('#mainBattleMenu').classList.add('hidden'); $('#switchMenu').classList.remove('hidden'); $('#cancelBattleSubmenu').classList.remove('hidden'); $$('.switchChoice').forEach(btn=>btn.onclick=()=>switchTo(+btn.dataset.i));}
 function switchTo(i){if(!battle||battle.locked||i===battle.active||state.party[i].hp<=0) return; closeSubmenus(); battle.active=i; renderBattle(); setBattleText(`${beastBy(activeMon().id).name}, you're up!`); setBattleLock(true); battleLater(enemyTurn,600)} function runAway(){if(!battle||battle.locked) return; if(Math.random()<0.85){setBattleText('You escaped safely.'); battle=null; setTimeout(()=>showScreen('worldScreen'),400)} else {setBattleText("Couldn't escape!"); setBattleLock(true); battleLater(enemyTurn,550)}}
 // setup + controls
@@ -597,7 +691,7 @@ function setHeld(dir,val){input[dir]=val} function bindControl(btn){const dir=bt
 document.addEventListener('keydown',e=>{if(e.key==='ArrowUp') input.up=true; if(e.key==='ArrowDown') input.down=true; if(e.key==='ArrowLeft') input.left=true; if(e.key==='ArrowRight') input.right=true; if((e.key===' '||e.key==='Enter')&&!e.repeat){e.preventDefault();interactWorld();}}); document.addEventListener('keyup',e=>{if(e.key==='ArrowUp') input.up=false; if(e.key==='ArrowDown') input.down=false; if(e.key==='ArrowLeft') input.left=false; if(e.key==='ArrowRight') input.right=false});
 function setChoice(g){pendingSetup.trainerGender=g; $('#boyChoice').classList.toggle('active',g==='boy'); $('#girlChoice').classList.toggle('active',g==='girl')}
 $('#newGameBtn').onclick=()=>{pendingSetup={trainerName:'Trainer',trainerGender:'boy'}; $('#trainerNameInput').value=''; setChoice('boy'); showScreen('setupScreen');}; $('#continueBtn').onclick=()=>showScreen('worldScreen'); $('#boyChoice').onclick=()=>setChoice('boy'); $('#girlChoice').onclick=()=>setChoice('girl'); $('#toStarterBtn').onclick=()=>{const name=$('#trainerNameInput').value.trim(); pendingSetup.trainerName=(name||'Trainer').slice(0,14); renderStarters(); showScreen('starterScreen');};
-$('#movesBtn').onclick=showMoves; $('#captureBtn').onclick=attemptCapture; $('#switchBtn').onclick=showSwitch; $('#runBtn').onclick=runAway; $('#cancelBattleSubmenu').onclick=closeSubmenus; $('#healBtn').onclick=()=>{healParty(false); alert('Party restored.')}; $('#manualSaveBtn').onclick=()=>{save(); alert('Game saved.')}; $('#resetBtn').onclick=()=>{if(confirm('Delete all Rune Beasts progress?')){localStorage.removeItem(SAVE_KEY); location.reload();}};
+$('#movesBtn').onclick=showMoves; $('#captureBtn').onclick=()=>attemptCapture('runeSeal'); $('#itemBtn').onclick=showItems; $('#switchBtn').onclick=showSwitch; $('#runBtn').onclick=runAway; $('#cancelBattleSubmenu').onclick=closeSubmenus; $('#healBtn').onclick=()=>{healParty(false); alert('Party restored.')}; $('#manualSaveBtn').onclick=()=>{save(); alert('Game saved.')}; $('#resetBtn').onclick=()=>{if(confirm('Delete all Rune Beasts progress?')){localStorage.removeItem(SAVE_KEY); location.reload();}};
 $$('[data-screen]').forEach(btn=>btn.onclick=()=>showScreen(btn.dataset.screen)); $$('.control').forEach(bindControl); $('#interactBtn').onclick=interactWorld;
 if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{})}
 try{buildGroundLayer();}catch(err){console.error('Ground build failed',err);}
