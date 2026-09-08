@@ -154,27 +154,72 @@ function healParty(say=true){state.party.forEach(m=>m.hp=maxHp(m)); save(); if(s
 function tryMove(dx,dy){const ox=state.pos.x, oy=state.pos.y; if(dx){const nx=ox+dx; const box=playerBox(nx,oy); if(!collideBox(box)) state.pos.x=nx;} if(dy){const ny=oy+dy; const box=playerBox(state.pos.x,ny); if(!collideBox(box)) state.pos.y=ny;}}
 function updateWorld(dt){if(!$('#worldScreen').classList.contains('active')||battle) return; let vx=0,vy=0; if(input.left) vx-=1; if(input.right) vx+=1; if(input.up) vy-=1; if(input.down) vy+=1; const moving=vx!==0||vy!==0; if(moving){const len=Math.hypot(vx,vy)||1; vx/=len; vy/=len; if(Math.abs(vx)>Math.abs(vy)) state.dir=vx>0?'right':'left'; else state.dir=vy>0?'down':'up'; const beforeX=state.pos.x,beforeY=state.pos.y; tryMove(vx*world.playerSpeed*dt,vy*world.playerSpeed*dt); const moved=Math.hypot(state.pos.x-beforeX,state.pos.y-beforeY); if(moved>0){state.steps+=1; world.encounterDistance+=moved; world.frameTimer+=dt; if(world.frameTimer>0.17){world.frame=(world.frame+1)%2; world.frameTimer=0;}}} else {world.frame=0; world.frameTimer=0;} const {tx,ty}=currentTile(); const g=groundAt(tx,ty); const o=objAt(tx,ty); if(HEAL_GROUND.has(g)){healParty(false); $('#worldText').textContent='The healing spring restored your party.';} else if(SAVE_OBJECT.has(o)){save(); $('#worldText').textContent='Your progress was saved at the rune crystal.';} else if(ENCOUNTER_GROUND.has(g)){$('#worldText').textContent='Tall grass rustles... wild Rune Beasts live here.'; if(world.encounterDistance>24 && Math.random()<0.04){world.encounterDistance=0; startBattle(pickEncounter()); return;}} else if(DOOR_OBJECT.has(o)) $('#worldText').textContent='The house is locked for now.'; else if(tx>=40&&tx<=47&&ty>=20&&ty<=25) $('#worldText').textContent='Runevale Bridge leads to Eastbank Quarry.'; else if(tx>=48) $('#worldText').textContent='Eastbank Quarry — wild Rune Beasts gather beyond the bridge.'; else $('#worldText').textContent='Explore Runevale Town.'; $('.areaName').textContent=tx>=48?'Eastbank Quarry':'Runevale Town'; world.camera.x=Math.round(clamp(state.pos.x-canvas.width/2,0,world.width-canvas.width)); world.camera.y=Math.round(clamp(state.pos.y-canvas.height/2,0,world.height-canvas.height));}
 const GROUND_COLOURS={'.':'#78b85f','g':'#4f8a46','p':'#c9ad76','w':'#4c8fc9','W':'#4c8fc9','b':'#b58a55','s':'#d6bd82','S':'#78b85f','f':'#78b85f','F':'#78b85f'};
-function drawGroundTexture(img,px,py,g){
-  ctx.fillStyle=GROUND_COLOURS[g]||GROUND_COLOURS['.'];
-  ctx.fillRect(px,py,TILE,TILE);
+
+// Pokémon-style terrain architecture: construct the complete ground layer once at native
+// resolution, then copy one continuous bitmap to the visible canvas every frame.
+const groundLayer=document.createElement('canvas');
+groundLayer.width=MAP_W*TILE;
+groundLayer.height=MAP_H*TILE;
+const groundCtx=groundLayer.getContext('2d',{alpha:false});
+groundCtx.imageSmoothingEnabled=false;
+let groundLayerReady=false;
+let groundLayerBuilding=false;
+
+function paintNativeTile(target,img,dx,dy,g){
+  target.fillStyle=GROUND_COLOURS[g]||GROUND_COLOURS['.'];
+  target.fillRect(dx,dy,TILE,TILE);
   if(!img||!img.complete||!img.naturalWidth) return;
   const inset=(img.naturalWidth>4&&img.naturalHeight>4)?1:0;
-  ctx.drawImage(img,inset,inset,img.naturalWidth-inset*2,img.naturalHeight-inset*2,px,py,TILE,TILE);
+  target.drawImage(
+    img,
+    inset,inset,img.naturalWidth-inset*2,img.naturalHeight-inset*2,
+    dx,dy,TILE,TILE
+  );
 }
+
+function buildGroundLayer(){
+  if(groundLayerReady||groundLayerBuilding) return;
+  const needed=[...new Set(Object.values(TILESET).flat().filter(Boolean))];
+  if(needed.some(src=>!images[src]||!images[src].complete||!images[src].naturalWidth)){
+    requestAnimationFrame(buildGroundLayer);
+    return;
+  }
+  groundLayerBuilding=true;
+  groundCtx.fillStyle=GROUND_COLOURS['.'];
+  groundCtx.fillRect(0,0,groundLayer.width,groundLayer.height);
+  for(let ty=0;ty<MAP_H;ty++){
+    for(let tx=0;tx<MAP_W;tx++){
+      const g=groundAt(tx,ty);
+      const key=groundSpriteKey(tx,ty);
+      paintNativeTile(groundCtx,images[key],tx*TILE,ty*TILE,g);
+    }
+  }
+  groundLayerReady=true;
+  groundLayerBuilding=false;
+}
+
 function drawWorld(){
+  if(!groundLayerReady) buildGroundLayer();
   ctx.fillStyle=GROUND_COLOURS['.'];
   ctx.fillRect(0,0,canvas.width,canvas.height);
   const firstX=Math.floor(world.camera.x/TILE), firstY=Math.floor(world.camera.y/TILE);
   const offsetX=-(world.camera.x%TILE), offsetY=-(world.camera.y%TILE);
   const cols=Math.ceil(canvas.width/TILE)+2, rows=Math.ceil(canvas.height/TILE)+2;
 
+  if(groundLayerReady){
+    const sx=Math.max(0,Math.floor(world.camera.x));
+    const sy=Math.max(0,Math.floor(world.camera.y));
+    const sw=Math.min(canvas.width,groundLayer.width-sx);
+    const sh=Math.min(canvas.height,groundLayer.height-sy);
+    if(sw>0&&sh>0) ctx.drawImage(groundLayer,sx,sy,sw,sh,0,0,sw,sh);
+  }
+
+  // Objects are a separate overlay layer, like classic tilemap engines.
   for(let y=0;y<rows;y++){
     for(let x=0;x<cols;x++){
       const tx=firstX+x, ty=firstY+y;
       if(tx<0||ty<0||tx>=MAP_W||ty>=MAP_H) continue;
       const px=Math.floor(offsetX+x*TILE), py=Math.floor(offsetY+y*TILE);
-      const g=groundSpriteKey(tx,ty), gi=images[g];
-      drawGroundTexture(gi,px,py,groundAt(tx,ty));
       const o=objAt(tx,ty);
       const oiKey=objectSpriteKey(tx,ty), oi=oiKey?images[oiKey]:null;
       if(oi&&oi.complete){
@@ -257,7 +302,7 @@ function setChoice(g){pendingSetup.trainerGender=g; $('#boyChoice').classList.to
 $('#newGameBtn').onclick=()=>{pendingSetup={trainerName:'Trainer',trainerGender:'boy'}; $('#trainerNameInput').value=''; setChoice('boy'); showScreen('setupScreen');}; $('#continueBtn').onclick=()=>showScreen('worldScreen'); $('#boyChoice').onclick=()=>setChoice('boy'); $('#girlChoice').onclick=()=>setChoice('girl'); $('#toStarterBtn').onclick=()=>{const name=$('#trainerNameInput').value.trim(); pendingSetup.trainerName=(name||'Trainer').slice(0,14); renderStarters(); showScreen('starterScreen');};
 $('#movesBtn').onclick=showMoves; $('#captureBtn').onclick=attemptCapture; $('#switchBtn').onclick=showSwitch; $('#runBtn').onclick=runAway; $('#cancelBattleSubmenu').onclick=closeSubmenus; $('#healBtn').onclick=()=>{healParty(false); alert('Party restored.')}; $('#manualSaveBtn').onclick=()=>{save(); alert('Game saved.')}; $('#resetBtn').onclick=()=>{if(confirm('Delete all Rune Beasts progress?')){localStorage.removeItem(SAVE_KEY); location.reload();}};
 $$('[data-screen]').forEach(btn=>btn.onclick=()=>showScreen(btn.dataset.screen)); $$('.control').forEach(bindControl);
-if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{})} load(); $('#continueBtn').classList.toggle('hidden',!localStorage.getItem(SAVE_KEY)); renderWorldPanels(); requestAnimationFrame(loop);
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{})} buildGroundLayer(); load(); $('#continueBtn').classList.toggle('hidden',!localStorage.getItem(SAVE_KEY)); renderWorldPanels(); requestAnimationFrame(loop);
 
 window.addEventListener('error',e=>{
   console.error('Rune Beasts runtime error',e.error||e.message);
