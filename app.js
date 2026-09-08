@@ -150,6 +150,7 @@ const WORLD_BLOCKED=makeGrid(false);
 function blockRect(tx,ty,w,h){for(let y=ty;y<ty+h;y++)for(let x=tx;x<tx+w;x++)if(x>=0&&y>=0&&x<MAP_W&&y<MAP_H)WORLD_BLOCKED[y][x]=true;}
 BUILDINGS.forEach(b=>blockRect(b.tx,b.ty,b.w,b.h));
 LANDMARKS.forEach(b=>blockRect(b.tx,b.ty,b.w,b.h));
+blockRect(37,35,3,3); // Rune fountain basin
 
 const WORLD_NPCS=[
   {id:'rowan',name:'Rowan',tx:55,ty:38,shirt:'#6c4d9e',hair:'#5b3b25'},
@@ -168,7 +169,7 @@ function npcBox(n){return {x:n.tx*TILE+3,y:n.ty*TILE+2,w:10,h:12};}
 const SOLID_GROUND=new Set(['w','W']);
 const SOLID_OBJECT=new Set(['t','t2','tp','n','rk','bu','st','bn','lp','sg','hl','hm','hr','wl','wr']);
 const ENCOUNTER_GROUND=new Set(['g']); 
-const HEAL_GROUND=new Set(['S']); 
+const HEAL_GROUND=new Set([]); 
 const SAVE_OBJECT=new Set(['sv']);
 
 let state={party:[],collection:{},shards:100,wins:0,captures:0,steps:0,pos:{x:(WORLD_SPAWN.tx+.5)*TILE,y:(WORLD_SPAWN.ty+.5)*TILE},dir:'down',trainerName:'Trainer',trainerGender:'boy',flags:{}};
@@ -345,6 +346,7 @@ function interactWorld(){
 
 function passiveWorldMessage(tx,ty){
   if(performance.now()<world.messageUntil)return;
+  if(activeInterior){$('#worldText').textContent=activeInterior==='clinic'?'Rune Clinic — A to use the counter, or move to the doorway to leave.':'Rowan’s Workshop — A near the counter to talk, or move to the doorway to leave.';return;}
   const g=groundAt(tx,ty);
   if(g==='g'){$('#worldText').textContent='Tall grass rustles nearby — wild Rune Beasts live here.';return;}
   if(tx>=73){
