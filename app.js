@@ -1,6 +1,18 @@
 
 const TYPES={Fire:{strong:"Grass",weak:"Water"},Grass:{strong:"Water",weak:"Fire"},Water:{strong:"Fire",weak:"Grass"},Electric:{strong:"Flying",weak:"Rock"},Flying:{strong:"Rock",weak:"Electric"},Rock:{strong:"Electric",weak:"Flying"}};
-const BEASTS=[{"id": "cindercub", "name": "Cindercub", "type": "Fire", "rarity": "Starter", "role": "Balanced", "base": [44, 52, 42, 48, 42, 50], "glyph": "♞"}, {"id": "ashbit", "name": "Ashbit", "type": "Fire", "rarity": "Common", "role": "Speed", "base": [32, 49, 31, 42, 34, 64], "glyph": "⌁"}, {"id": "magmole", "name": "Magmole", "type": "Fire", "rarity": "Uncommon", "role": "Tank", "base": [58, 60, 63, 34, 44, 25], "glyph": "●"}, {"id": "flarewing", "name": "Flarewing", "type": "Fire", "rarity": "Rare", "role": "Special", "base": [43, 38, 34, 68, 44, 70], "glyph": "⌃"}, {"id": "ripplet", "name": "Ripplet", "type": "Water", "rarity": "Starter", "role": "Balanced", "base": [48, 46, 46, 52, 48, 44], "glyph": "≋"}, {"id": "bubbfin", "name": "Bubbfin", "type": "Water", "rarity": "Common", "role": "Support", "base": [42, 31, 43, 48, 52, 37], "glyph": "◌"}, {"id": "cragclaw", "name": "Cragclaw", "type": "Water", "rarity": "Uncommon", "role": "Tank", "base": [55, 48, 67, 35, 52, 24], "glyph": "⋈"}, {"id": "abyssquid", "name": "Abyssquid", "type": "Water", "rarity": "Rare", "role": "Special", "base": [46, 34, 41, 72, 61, 43], "glyph": "Ψ"}, {"id": "spriglet", "name": "Spriglet", "type": "Grass", "rarity": "Starter", "role": "Balanced", "base": [46, 48, 44, 46, 52, 46], "glyph": "♧"}, {"id": "mossbug", "name": "Mossbug", "type": "Grass", "rarity": "Common", "role": "Defence", "base": [41, 35, 58, 31, 54, 30], "glyph": "✿"}, {"id": "vineape", "name": "Vineape", "type": "Grass", "rarity": "Uncommon", "role": "Physical", "base": [48, 62, 42, 36, 39, 60], "glyph": "ϟ"}, {"id": "bloomhorn", "name": "Bloomhorn", "type": "Grass", "rarity": "Rare", "role": "HP/Support", "base": [72, 43, 55, 48, 64, 28], "glyph": "♜"}, {"id": "voltpup", "name": "Voltpup", "type": "Electric", "rarity": "Uncommon", "role": "All-rounder", "base": [45, 51, 39, 52, 41, 62], "glyph": "Ϟ"}, {"id": "sparkit", "name": "Sparkit", "type": "Electric", "rarity": "Common", "role": "Speed", "base": [34, 42, 30, 45, 33, 72], "glyph": "ϟ"}, {"id": "thundram", "name": "Thundram", "type": "Electric", "rarity": "Rare", "role": "Physical", "base": [58, 72, 53, 42, 44, 38], "glyph": "♈"}, {"id": "arcwing", "name": "Arcwing", "type": "Electric", "rarity": "Rare", "role": "Special", "base": [42, 35, 37, 74, 51, 68], "glyph": "⌁"}, {"id": "breezlet", "name": "Breezlet", "type": "Flying", "rarity": "Common", "role": "Balanced", "base": [38, 41, 36, 42, 38, 58], "glyph": "▲"}, {"id": "galehare", "name": "Galehare", "type": "Flying", "rarity": "Uncommon", "role": "Speed", "base": [44, 48, 37, 39, 40, 75], "glyph": "⋏"}, {"id": "skyrake", "name": "Skyrake", "type": "Flying", "rarity": "Rare", "role": "Offence", "base": [51, 61, 45, 56, 44, 62], "glyph": "≻"}, {"id": "stormowl", "name": "Stormowl", "type": "Flying", "rarity": "Elite", "role": "Special tank", "base": [62, 39, 49, 74, 73, 55], "glyph": "◉"}, {"id": "pebblit", "name": "Pebblit", "type": "Rock", "rarity": "Common", "role": "Defence", "base": [47, 40, 64, 28, 47, 24], "glyph": "◆"}, {"id": "craggoat", "name": "Craggoat", "type": "Rock", "rarity": "Uncommon", "role": "Physical", "base": [54, 64, 59, 30, 42, 35], "glyph": "♑"}, {"id": "gemscarab", "name": "Gemscarab", "type": "Rock", "rarity": "Rare", "role": "Defensive", "base": [53, 37, 76, 45, 68, 25], "glyph": "◇"}, {"id": "titanox", "name": "Titanox", "type": "Rock", "rarity": "Elite", "role": "Tank", "base": [82, 74, 81, 28, 60, 18], "glyph": "♉"}];
+const BEASTS=[{"id": "cindercub", "name": "Cindercub", "type": "Fire", "rarity": "Starter", "role": "Balanced", "base": [44, 52, 42, 48, 42, 50], "glyph": "♞"}, {"id": "ashbit", "name": "Ashbit", "type": "Fire", "rarity": "Common", "role": "Speed", "base": [32, 49, 31, 42, 34, 64], "glyph": "⌁"}, {"id": "magmole", "name": "Magmole", "type": "Fire", "rarity": "Uncommon", "role": "Tank", "base": [58, 60, 63, 34, 44, 25], "glyph": "●"}, {"id": "flarewing", "name": "Flarewing", "type": "Fire", "rarity": "Rare", "role": "Special", "base": [43, 38, 34, 68, 44, 70], "glyph": "⌃"}, {"id": "ripplet", "name": "Ripplet", "type": "Water", "rarity": "Starter", "role": "Balanced", "base": [48, 46, 46, 52, 48, 44], "glyph": "≋"}, {"id": "bubbfin", "name": "Bubbfin", "type": "Water", "rarity": "Common", "role": "Support", "base": [42, 31, 43, 48, 52, 37], "glyph": "◌"}, {"id": "cragclaw", "name": "Cragclaw", "type": "Water", "rarity": "Uncommon", "role": "Tank", "base": [55, 48, 67, 35, 52, 24], "glyph": "⋈"}, {"id": "abyssquid", "name": "Abyssquid", "type": "Water", "rarity": "Rare", "role": "Special", "base": [46, 34, 41, 72, 61, 43], "glyph": "Ψ"}, {"id": "spriglet", "name": "Spriglet", "type": "Grass", "rarity": "Starter", "role": "Balanced", "base": [46, 48, 44, 46, 52, 46], "glyph": "♧"}, {"id": "mossbug", "name": "Mossbug", "type": "Grass", "rarity": "Common", "role": "Defence", "base": [41, 35, 58, 31, 54, 30], "glyph": "✿"}, {"id": "vineape", "name": "Vineape", "type": "Grass", "rarity": "Uncommon", "role": "Physical", "base": [48, 62, 42, 36, 39, 60], "glyph": "ϟ"}, {"id": "bloomhorn", "name": "Bloomhorn", "type": "Grass", "rarity": "Rare", "role": "HP/Support", "base": [72, 43, 55, 48, 64, 28], "glyph": "♜"}, {"id": "voltpup", "name": "Voltpup", "type": "Electric", "rarity": "Uncommon", "role": "All-rounder", "base": [45, 51, 39, 52, 41, 62], "glyph": "Ϟ"}, {"id": "sparkit", "name": "Sparkit", "type": "Electric", "rarity": "Common", "role": "Speed", "base": [34, 42, 30, 45, 33, 72], "glyph": "ϟ"}, {"id": "thundram", "name": "Thundram", "type": "Electric", "rarity": "Rare", "role": "Physical", "base": [58, 72, 53, 42, 44, 38], "glyph": "♈"}, {"id": "arcwing", "name": "Arcwing", "type": "Electric", "rarity": "Rare", "role": "Special", "base": [42, 35, 37, 74, 51, 68], "glyph": "⌁"}, {"id": "breezlet", "name": "Breezlet", "type": "Flying", "rarity": "Common", "role": "Balanced", "base": [38, 41, 36, 42, 38, 58], "glyph": "▲"}, {"id": "galehare", "name": "Galehare", "type": "Flying", "rarity": "Uncommon", "role": "Speed", "base": [44, 48, 37, 39, 40, 75], "glyph": "⋏"}, {"id": "skyrake", "name": "Skyrake", "type": "Flying", "rarity": "Rare", "role": "Offence", "base": [51, 61, 45, 56, 44, 62], "glyph": "≻"}, {"id": "stormowl", "name": "Stormowl", "type": "Flying", "rarity": "Elite", "role": "Special tank", "base": [62, 39, 49, 74, 73, 55], "glyph": "◉"}, {"id": "pebblit", "name": "Pebblit", "type": "Rock", "rarity": "Common", "role": "Defence", "base": [47, 40, 64, 28, 47, 24], "glyph": "◆"}, {"id": "craggoat", "name": "Craggoat", "type": "Rock", "rarity": "Uncommon", "role": "Physical", "base": [54, 64, 59, 30, 42, 35], "glyph": "♑"}, {"id": "gemscarab", "name": "Gemscarab", "type": "Rock", "rarity": "Rare", "role": "Defensive", "base": [53, 37, 76, 45, 68, 25], "glyph": "◇"}, {"id": "titanox", "name": "Titanox", "type": "Rock", "rarity": "Elite", "role": "Tank", "base": [82, 74, 81, 28, 60, 18], "glyph": "♉"}, 
+{"id":"coalisk","name":"Coalisk","type":"Fire","rarity":"Common","role":"Physical","base":[39,55,37,35,34,52],"glyph":"◈"},
+{"id":"pyrel","name":"Pyrel","type":"Fire","rarity":"Uncommon","role":"Special","base":[45,38,42,63,48,55],"glyph":"✦"},
+{"id":"driftfin","name":"Driftfin","type":"Water","rarity":"Common","role":"Speed","base":[40,39,38,46,42,65],"glyph":"≈"},
+{"id":"tidehorn","name":"Tidehorn","type":"Water","rarity":"Rare","role":"Tank","base":[68,58,67,46,55,28],"glyph":"◒"},
+{"id":"fernfox","name":"Fernfox","type":"Grass","rarity":"Common","role":"Speed","base":[41,46,38,42,45,66],"glyph":"❧"},
+{"id":"thornox","name":"Thornox","type":"Grass","rarity":"Uncommon","role":"Tank","base":[62,59,65,37,53,30],"glyph":"♣"},
+{"id":"staticub","name":"Staticub","type":"Electric","rarity":"Common","role":"Balanced","base":[43,47,39,51,39,58],"glyph":"ϟ"},
+{"id":"coilisk","name":"Coilisk","type":"Electric","rarity":"Rare","role":"Special","base":[47,42,43,72,50,63],"glyph":"⌇"},
+{"id":"cloudimp","name":"Cloudimp","type":"Flying","rarity":"Common","role":"Support","base":[39,35,36,48,50,61],"glyph":"☁"},
+{"id":"razorjay","name":"Razorjay","type":"Flying","rarity":"Uncommon","role":"Offence","base":[45,62,39,45,38,70],"glyph":"➤"},
+{"id":"slateback","name":"Slateback","type":"Rock","rarity":"Common","role":"Defence","base":[55,43,68,29,48,22],"glyph":"▰"},
+{"id":"crystoad","name":"Crystoad","type":"Rock","rarity":"Rare","role":"Special tank","base":[61,38,63,61,71,27],"glyph":"◇"}];
 const MOVES={"Scratch": {"type": "Neutral", "power": 35, "acc": 100}, "Quick Jab": {"type": "Neutral", "power": 30, "acc": 100}, "Guard Break": {"type": "Neutral", "power": 50, "acc": 90}, "Ember Bite": {"type": "Fire", "power": 45, "acc": 100}, "Flame Rush": {"type": "Fire", "power": 60, "acc": 90}, "Heat Wave": {"type": "Fire", "power": 70, "acc": 85}, "Water Jet": {"type": "Water", "power": 45, "acc": 100}, "Tidal Slam": {"type": "Water", "power": 60, "acc": 90}, "Bubble Burst": {"type": "Water", "power": 55, "acc": 95}, "Leaf Swipe": {"type": "Grass", "power": 45, "acc": 100}, "Vine Lash": {"type": "Grass", "power": 60, "acc": 90}, "Spore Burst": {"type": "Grass", "power": 55, "acc": 95}, "Spark Snap": {"type": "Electric", "power": 45, "acc": 100}, "Volt Rush": {"type": "Electric", "power": 60, "acc": 90}, "Arc Pulse": {"type": "Electric", "power": 70, "acc": 85}, "Gust": {"type": "Flying", "power": 45, "acc": 100}, "Sky Dive": {"type": "Flying", "power": 60, "acc": 90}, "Wind Cutter": {"type": "Flying", "power": 55, "acc": 95}, "Stone Toss": {"type": "Rock", "power": 45, "acc": 100}, "Rock Ram": {"type": "Rock", "power": 60, "acc": 90}, "Crystal Crash": {"type": "Rock", "power": 70, "acc": 85}};
 const LEARNSETS={"cindercub": [[1, "Scratch"], [3, "Ember Bite"], [8, "Quick Jab"], [12, "Flame Rush"], [20, "Guard Break"], [28, "Heat Wave"]], "ashbit": [[1, "Scratch"], [3, "Ember Bite"], [8, "Quick Jab"], [12, "Flame Rush"], [20, "Guard Break"], [28, "Heat Wave"]], "magmole": [[1, "Scratch"], [3, "Ember Bite"], [8, "Quick Jab"], [12, "Flame Rush"], [20, "Guard Break"], [28, "Heat Wave"]], "flarewing": [[1, "Scratch"], [3, "Ember Bite"], [8, "Quick Jab"], [12, "Flame Rush"], [20, "Guard Break"], [28, "Heat Wave"]], "ripplet": [[1, "Scratch"], [3, "Water Jet"], [8, "Quick Jab"], [12, "Bubble Burst"], [20, "Guard Break"], [28, "Tidal Slam"]], "bubbfin": [[1, "Scratch"], [3, "Water Jet"], [8, "Quick Jab"], [12, "Bubble Burst"], [20, "Guard Break"], [28, "Tidal Slam"]], "cragclaw": [[1, "Scratch"], [3, "Water Jet"], [8, "Quick Jab"], [12, "Bubble Burst"], [20, "Guard Break"], [28, "Tidal Slam"]], "abyssquid": [[1, "Scratch"], [3, "Water Jet"], [8, "Quick Jab"], [12, "Bubble Burst"], [20, "Guard Break"], [28, "Tidal Slam"]], "spriglet": [[1, "Scratch"], [3, "Leaf Swipe"], [8, "Quick Jab"], [12, "Spore Burst"], [20, "Guard Break"], [28, "Vine Lash"]], "mossbug": [[1, "Scratch"], [3, "Leaf Swipe"], [8, "Quick Jab"], [12, "Spore Burst"], [20, "Guard Break"], [28, "Vine Lash"]], "vineape": [[1, "Scratch"], [3, "Leaf Swipe"], [8, "Quick Jab"], [12, "Spore Burst"], [20, "Guard Break"], [28, "Vine Lash"]], "bloomhorn": [[1, "Scratch"], [3, "Leaf Swipe"], [8, "Quick Jab"], [12, "Spore Burst"], [20, "Guard Break"], [28, "Vine Lash"]], "voltpup": [[1, "Scratch"], [3, "Spark Snap"], [8, "Quick Jab"], [12, "Volt Rush"], [20, "Guard Break"], [28, "Arc Pulse"]], "sparkit": [[1, "Scratch"], [3, "Spark Snap"], [8, "Quick Jab"], [12, "Volt Rush"], [20, "Guard Break"], [28, "Arc Pulse"]], "thundram": [[1, "Scratch"], [3, "Spark Snap"], [8, "Quick Jab"], [12, "Volt Rush"], [20, "Guard Break"], [28, "Arc Pulse"]], "arcwing": [[1, "Scratch"], [3, "Spark Snap"], [8, "Quick Jab"], [12, "Volt Rush"], [20, "Guard Break"], [28, "Arc Pulse"]], "breezlet": [[1, "Scratch"], [3, "Gust"], [8, "Quick Jab"], [12, "Wind Cutter"], [20, "Guard Break"], [28, "Sky Dive"]], "galehare": [[1, "Scratch"], [3, "Gust"], [8, "Quick Jab"], [12, "Wind Cutter"], [20, "Guard Break"], [28, "Sky Dive"]], "skyrake": [[1, "Scratch"], [3, "Gust"], [8, "Quick Jab"], [12, "Wind Cutter"], [20, "Guard Break"], [28, "Sky Dive"]], "stormowl": [[1, "Scratch"], [3, "Gust"], [8, "Quick Jab"], [12, "Wind Cutter"], [20, "Guard Break"], [28, "Sky Dive"]], "pebblit": [[1, "Scratch"], [3, "Stone Toss"], [8, "Quick Jab"], [12, "Rock Ram"], [20, "Guard Break"], [28, "Crystal Crash"]], "craggoat": [[1, "Scratch"], [3, "Stone Toss"], [8, "Quick Jab"], [12, "Rock Ram"], [20, "Guard Break"], [28, "Crystal Crash"]], "gemscarab": [[1, "Scratch"], [3, "Stone Toss"], [8, "Quick Jab"], [12, "Rock Ram"], [20, "Guard Break"], [28, "Crystal Crash"]], "titanox": [[1, "Scratch"], [3, "Stone Toss"], [8, "Quick Jab"], [12, "Rock Ram"], [20, "Guard Break"], [28, "Crystal Crash"]]};
 const STARTERS=["cindercub","ripplet","spriglet"];
@@ -139,12 +151,12 @@ const TILESET={
 'wr':'tile_grass_v2.png'
 };
 const BUILDINGS=[
-  {id:'guild',name:'Rune Market',tx:24,ty:8,w:11,h:8,doorX:29,doorY:15,roof:'#a94e42',roof2:'#d06a51',wall:'#e8cf9a',trim:'#744438',enterable:true,interior:'shop'},
-  {id:'homeA',name:'Maple House',tx:12,ty:11,w:9,h:7,doorX:16,doorY:17,roof:'#b65445',roof2:'#da7157',wall:'#ead6a7',trim:'#754536',enterable:false},
-  {id:'homeB',name:'Willow House',tx:40,ty:11,w:9,h:7,doorX:44,doorY:17,roof:'#4e728f',roof2:'#6f98b5',wall:'#e6d4aa',trim:'#435264',enterable:false},
-  {id:'workshop',name:'Rowan’s Workshop',tx:50,ty:28,w:10,h:8,doorX:55,doorY:35,roof:'#7c5a3e',roof2:'#a17b58',wall:'#d9c39c',trim:'#594332',enterable:true,interior:'workshop'},
-  {id:'clinic',name:'Rune Clinic',tx:10,ty:44,w:10,h:8,doorX:15,doorY:51,roof:'#b64c52',roof2:'#db6f72',wall:'#f0dbb4',trim:'#70464a',enterable:true,interior:'clinic'},
-  {id:'inn',name:'Moonbell Inn',tx:43,ty:45,w:10,h:8,doorX:48,doorY:52,roof:'#5b5f91',roof2:'#7c82b0',wall:'#e6d1a8',trim:'#444767',enterable:false}
+  {id:'guild',sign:'MARKET',name:'Rune Market',tx:24,ty:8,w:11,h:8,doorX:29,doorY:15,roof:'#a94e42',roof2:'#d06a51',wall:'#e8cf9a',trim:'#744438',enterable:true,interior:'shop'},
+  {id:'homeA',sign:'HOME',name:'Maple House',tx:12,ty:11,w:9,h:7,doorX:16,doorY:17,roof:'#b65445',roof2:'#da7157',wall:'#ead6a7',trim:'#754536',enterable:false},
+  {id:'homeB',sign:'HOME',name:'Willow House',tx:40,ty:11,w:9,h:7,doorX:44,doorY:17,roof:'#4e728f',roof2:'#6f98b5',wall:'#e6d4aa',trim:'#435264',enterable:false},
+  {id:'workshop',sign:'WORKSHOP',name:'Rowan’s Workshop',tx:50,ty:28,w:10,h:8,doorX:55,doorY:35,roof:'#7c5a3e',roof2:'#a17b58',wall:'#d9c39c',trim:'#594332',enterable:true,interior:'workshop'},
+  {id:'clinic',sign:'CLINIC',name:'Rune Clinic',tx:10,ty:44,w:10,h:8,doorX:15,doorY:51,roof:'#b64c52',roof2:'#db6f72',wall:'#f0dbb4',trim:'#70464a',enterable:true,interior:'clinic'},
+  {id:'inn',sign:'INN',name:'Moonbell Inn',tx:43,ty:45,w:10,h:8,doorX:48,doorY:52,roof:'#5b5f91',roof2:'#7c82b0',wall:'#e6d1a8',trim:'#444767',enterable:false}
 ];
 
 const LANDMARKS=[
@@ -199,13 +211,58 @@ function captureMilestoneReward(id){
   state.shards+=10+tier*5;
   return ` Species mastery! ${count} ${beastBy(id).name} bound — whole party +${xp} XP, +2 Rune Seals${tier%2===0?', +1 Greater Seal':''}, +${10+tier*5} shards.`;
 }
-function maxHp(m){return Math.round(beastBy(m.id).base[0]*0.7+m.level*5+20)} function statsFor(m){const b=beastBy(m.id).base;return [maxHp(m),...b.slice(1).map(v=>Math.round(v*0.65+m.level*2))]} function knownMoves(m){const set=LEARNSETS[m.id]||[[1,'Scratch']];return set.filter(([lv])=>lv<=m.level).map(x=>x[1]).slice(-4)} function makeMon(id,level){const m={uid:String(Date.now())+Math.random(),id,level,xp:0,hp:0}; m.hp=maxHp(m); return m;}
+function maxHp(m){return Math.round(beastBy(m.id).base[0]*0.7+m.level*5+20)} function statsFor(m){const b=beastBy(m.id).base;return [maxHp(m),...b.slice(1).map(v=>Math.round(v*0.65+m.level*2))]} 
+function defaultLearnset(type){
+  const byType={
+    Fire:[[1,'Scratch'],[3,'Ember Bite'],[8,'Quick Jab'],[12,'Flame Rush'],[20,'Guard Break'],[28,'Heat Wave']],
+    Water:[[1,'Scratch'],[3,'Water Jet'],[8,'Quick Jab'],[12,'Bubble Burst'],[20,'Guard Break'],[28,'Tidal Slam']],
+    Grass:[[1,'Scratch'],[3,'Leaf Swipe'],[8,'Quick Jab'],[12,'Spore Burst'],[20,'Guard Break'],[28,'Vine Lash']],
+    Electric:[[1,'Scratch'],[3,'Spark Snap'],[8,'Quick Jab'],[12,'Volt Rush'],[20,'Guard Break'],[28,'Arc Pulse']],
+    Flying:[[1,'Scratch'],[3,'Gust'],[8,'Quick Jab'],[12,'Wind Cutter'],[20,'Guard Break'],[28,'Sky Dive']],
+    Rock:[[1,'Scratch'],[3,'Stone Toss'],[8,'Quick Jab'],[12,'Rock Ram'],[20,'Guard Break'],[28,'Crystal Crash']]
+  };
+  return byType[type]||[[1,'Scratch']];
+}
+function knownMoves(m){const beast=beastBy(m.id);const set=LEARNSETS[m.id]||defaultLearnset(beast?.type);return set.filter(([lv])=>lv<=m.level).map(x=>x[1]).slice(-4)} function makeMon(id,level){const m={uid:String(Date.now())+Math.random(),id,level,xp:0,hp:0}; m.hp=maxHp(m); return m;}
 function normaliseState(){state.party=Array.isArray(state.party)?state.party:[]; state.collection=state.collection||{}; state.shards=Number.isFinite(+state.shards)?+state.shards:100; state.wins=state.wins||0; state.captures=state.captures||0; state.steps=state.steps||0; state.pos=state.pos||{x:(WORLD_SPAWN.tx+.5)*TILE,y:(WORLD_SPAWN.ty+.5)*TILE}; state.dir=state.dir||'down'; state.trainerName=(state.trainerName||'Trainer').slice(0,14); state.trainerGender=state.trainerGender==='girl'?'girl':'boy'; state.flags=state.flags||{}; state.inventory=state.inventory||{runeSeal:5,greaterSeal:1,tonic:2,reviveRoot:1}; for(const k of Object.keys(SHOP_ITEMS)) state.inventory[k]=Math.max(0,+state.inventory[k]||0); state.captureCounts=state.captureCounts||{}; if(state.flags.worldLayout!==15){state.pos={x:(WORLD_SPAWN.tx+.5)*TILE,y:(WORLD_SPAWN.ty+.5)*TILE};state.flags.worldLayout=15;} state.party.forEach(m=>{m.level=m.level||1; m.xp=m.xp||0; m.hp=Number.isFinite(m.hp)?clamp(m.hp,0,maxHp(m)):maxHp(m);});}
 function save(){normaliseState(); localStorage.setItem(SAVE_KEY,JSON.stringify(state)); renderWorldPanels();} function load(){const raw=localStorage.getItem(SAVE_KEY); if(!raw) return false; try{state=JSON.parse(raw); normaliseState(); return true;}catch{return false;}}
 function typeTag(type){return `<span class="typeTag" style="background:${typeColors[type]||typeColors.Neutral}">${type}</span>`}
-function creatureArt(id,size='md'){const b=beastBy(id), path=SPRITES[id]; if(path){const cls=size==='lg'?'sprite-lg':size==='sm'?'sprite-sm':'sprite-md'; return `<img class="creatureImg ${cls}" src="${assetUrl(path)}" alt="${b.name}" loading="eager">`;} const cls=size==='lg'?'':size==='sm'?' sm':' md'; return `<div class="fallbackSprite${cls}">${b.glyph}</div>`;}
+const PROC_SPRITES={};
+function beastSeed(id){let h=2166136261;for(const ch of id){h^=ch.charCodeAt(0);h=Math.imul(h,16777619);}return h>>>0;}
+function shadeHex(hex,amt){const n=parseInt(hex.slice(1),16),r=Math.max(0,Math.min(255,(n>>16)+amt)),g=Math.max(0,Math.min(255,((n>>8)&255)+amt)),b=Math.max(0,Math.min(255,(n&255)+amt));return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);}
+function proceduralBeastSprite(id){
+  if(PROC_SPRITES[id])return PROC_SPRITES[id];
+  const b=beastBy(id),seed=beastSeed(id);
+  const palette={Fire:'#d45a43',Water:'#4f8fc8',Grass:'#5e9e52',Electric:'#d8b73c',Flying:'#8299c8',Rock:'#84796b'};
+  const base=palette[b.type]||'#7a8190',light=shadeHex(base,32),dark=shadeHex(base,-42),accent={Fire:'#ffb34d',Water:'#8dd8ef',Grass:'#b4db67',Electric:'#fff074',Flying:'#d6e3f4',Rock:'#c9b88f'}[b.type]||'#ddd';
+  const c=document.createElement('canvas');c.width=64;c.height=64;const x=c.getContext('2d');x.imageSmoothingEnabled=false;
+  x.fillStyle='rgba(0,0,0,.18)';x.fillRect(16,50,32,5);
+  const kind=seed%6;
+  x.fillStyle=dark;
+  if(kind===0){x.fillRect(16,24,32,26);x.fillRect(10,30,10,12);x.fillRect(44,30,10,12);}
+  else if(kind===1){x.fillRect(20,18,24,34);x.fillRect(12,24,10,22);x.fillRect(42,24,10,22);}
+  else if(kind===2){x.fillRect(14,29,36,20);x.fillRect(24,16,16,16);x.fillRect(6,34,10,8);x.fillRect(48,34,10,8);}
+  else if(kind===3){x.fillRect(17,21,30,29);x.fillRect(9,19,12,11);x.fillRect(43,19,12,11);}
+  else if(kind===4){x.fillRect(12,27,40,22);x.fillRect(22,16,20,16);}
+  else{x.fillRect(18,20,28,30);x.fillRect(8,30,12,12);x.fillRect(44,30,12,12);}
+  x.fillStyle=base;
+  x.fillRect(20,23,24,23);x.fillRect(23,18,18,12);
+  if(seed&1){x.fillRect(13,19,10,8);x.fillRect(41,19,10,8);}else{x.fillRect(18,12,7,12);x.fillRect(39,12,7,12);}
+  x.fillStyle=light;x.fillRect(24,26,16,13);x.fillRect(27,20,10,7);
+  x.fillStyle='#17202d';x.fillRect(27,24,3,3);x.fillRect(36,24,3,3);
+  x.fillStyle=accent;
+  if(b.type==='Electric'){x.fillRect(8,22,9,4);x.fillRect(47,38,9,4);x.fillRect(13,18,4,8);}
+  else if(b.type==='Flying'){x.fillRect(6,28,13,5);x.fillRect(45,28,13,5);x.fillRect(9,24,8,4);x.fillRect(47,24,8,4);}
+  else if(b.type==='Rock'){x.fillRect(15,36,8,7);x.fillRect(41,34,8,8);x.fillRect(28,14,8,7);}
+  else if(b.type==='Grass'){x.fillRect(28,10,4,11);x.fillRect(20,12,9,4);x.fillRect(32,12,9,4);}
+  else if(b.type==='Water'){x.fillRect(45,20,8,4);x.fillRect(50,17,4,10);x.fillRect(12,41,8,4);}
+  else if(b.type==='Fire'){x.fillRect(28,10,5,10);x.fillRect(24,14,5,7);x.fillRect(33,14,5,7);}
+  x.fillStyle=dark;x.fillRect(22,45,7,8);x.fillRect(35,45,7,8);
+  PROC_SPRITES[id]=c.toDataURL('image/png');return PROC_SPRITES[id];
+}
+function creatureArt(id,size='md'){const b=beastBy(id),path=SPRITES[id],cls=size==='lg'?'sprite-lg':size==='sm'?'sprite-sm':'sprite-md';const src=path?assetUrl(path):proceduralBeastSprite(id);return `<img class="creatureImg ${cls}" src="${src}" alt="${b.name}" loading="eager">`;}
 function trainerPreview(gender,size=56){return `<img src="${assetUrl(TRAINER_FRAMES[gender].down[0])}" alt="${gender} trainer" style="width:${size}px;height:${size}px;image-rendering:pixelated">`;}
-function showScreen(id){$$('.screen').forEach(el=>el.classList.remove('active')); const t=$('#'+id); if(t) t.classList.add('active'); $$('.bottomNav button').forEach(btn=>btn.classList.toggle('active',btn.dataset.screen===id)); if(id==='partyScreen') renderParty(); if(id==='dexScreen') renderDex(); if(id==='profileScreen') renderProfile(); if(id==='shopScreen') renderShop(); if(id==='worldScreen') renderWorldPanels();}
+function showScreen(id){$$('.screen').forEach(el=>el.classList.remove('active')); const t=$('#'+id); if(t) t.classList.add('active'); $$('.bottomNav button').forEach(btn=>btn.classList.toggle('active',btn.dataset.screen===id)); if(id==='partyScreen') renderParty(); if(id==='dexScreen') renderDex(); if(id==='profileScreen') renderProfile(); if(id==='shopScreen') renderShop(); if(id==='mapScreen') renderMap(); if(id==='worldScreen') renderWorldPanels();}
 function renderStarters(){$('#starterChoices').innerHTML=STARTERS.map(id=>{const beast=beastBy(id), temp=makeMon(id,5); return `<div class="card"><div class="spriteWrap">${creatureArt(id,'lg')}</div><h3>${beast.name}</h3>${typeTag(beast.type)}<div class="muted">${beast.role}</div><div class="movesList">Moves: ${knownMoves(temp).join(' · ')}</div><button class="primary big chooseStarter" data-id="${id}">Choose</button></div>`;}).join(''); $$('.chooseStarter').forEach(btn=>btn.onclick=()=>{const mon=makeMon(btn.dataset.id,5); state={party:[mon],collection:{[mon.id]:true},shards:100,wins:0,captures:0,steps:0,pos:{x:(10+0.5)*TILE,y:(22+0.5)*TILE},dir:'down',trainerName:pendingSetup.trainerName||'Trainer',trainerGender:pendingSetup.trainerGender||'boy',flags:{},inventory:{runeSeal:5,greaterSeal:1,tonic:2,reviveRoot:1},captureCounts:{}}; save(); showScreen('worldScreen');});}
 function renderBag(){
   const target=$('#bagList'); if(!target)return;
@@ -223,7 +280,28 @@ function buyShopItem(id){
   if(state.shards<it.price){alert('Not enough Rune Shards.');return;}
   state.shards-=it.price; state.inventory[id]=(state.inventory[id]||0)+1; save(); renderShop();
 }
-function renderWorldPanels(){if(!$('#shards')) return; $('#shards').textContent=state.shards; $('#partyCount').textContent=`${state.party.length} / 6`; $('#partyMini').innerHTML=state.party.map((m,i)=>`<div class="partyMiniRow"><span>${i===0?'★ ':''}${beastBy(m.id).name} Lv${m.level} · ${m.hp}/${maxHp(m)} HP</span><span>${typeTag(beastBy(m.id).type)}</span></div>`).join(''); $('#trainerBadge').innerHTML=`<span class="badgeName">${state.trainerName}</span>`;}
+function renderMap(){
+  const c=$('#mapCanvas'); if(!c)return; const m=c.getContext('2d');m.imageSmoothingEnabled=false;
+  const sx=c.width/MAP_W,sy=c.height/MAP_H;
+  m.fillStyle='#6fa95a';m.fillRect(0,0,c.width,c.height);
+  for(let ty=0;ty<MAP_H;ty++)for(let tx=0;tx<MAP_W;tx++){
+    const g=groundAt(tx,ty);
+    if(g==='w'||g==='W')m.fillStyle='#4c8fc9';
+    else if(g==='p'||g==='b')m.fillStyle=g==='b'?'#9c7245':'#c9ad76';
+    else if(g==='g')m.fillStyle='#3f7e3f';
+    else if(g==='s')m.fillStyle='#d6bd82';
+    else continue;
+    m.fillRect(Math.floor(tx*sx),Math.floor(ty*sy),Math.ceil(sx),Math.ceil(sy));
+  }
+  const buildingColour={guild:'#e2bd45',clinic:'#d9646c',workshop:'#9b6c46',inn:'#6e74ad',homeA:'#c48765',homeB:'#7892a9'};
+  BUILDINGS.forEach(b=>{m.fillStyle=buildingColour[b.id]||'#ddd';m.fillRect(b.tx*sx,b.ty*sy,Math.max(3,b.w*sx),Math.max(3,b.h*sy));});
+  m.fillStyle='#6e6253';LANDMARKS.forEach(l=>m.fillRect(l.tx*sx,l.ty*sy,l.w*sx,l.h*sy));
+  const px=state.pos.x/TILE*sx,py=state.pos.y/TILE*sy;
+  m.fillStyle='#fff';m.fillRect(px-3,py-3,6,6);m.fillStyle='#17202d';m.fillRect(px-1,py-1,2,2);
+  m.font='7px monospace';m.textBaseline='top';
+  const labels=[['MARKET',29,7],['CLINIC',15,43],['WORKSHOP',55,27],['INN',48,44],['MINE',91,16],['CAVE',105,56],['BRIDGE',69,36]];
+  labels.forEach(([t,x,y])=>{const xx=x*sx,yy=y*sy;m.fillStyle='rgba(8,15,27,.8)';m.fillRect(xx-2,yy-1,m.measureText(t).width+4,9);m.fillStyle='#fff5cf';m.fillText(t,xx,yy);});
+}function renderWorldPanels(){if(!$('#shards')) return; $('#shards').textContent=state.shards; $('#partyCount').textContent=`${state.party.length} / 6`; $('#partyMini').innerHTML=state.party.map((m,i)=>`<div class="partyMiniRow"><span>${i===0?'★ ':''}${beastBy(m.id).name} Lv${m.level} · ${m.hp}/${maxHp(m)} HP</span><span>${typeTag(beastBy(m.id).type)}</span></div>`).join(''); $('#trainerBadge').innerHTML=`<span class="badgeName">${state.trainerName}</span>`;}
 function renderParty(){$('#partyList').innerHTML=state.party.map((m,i)=>{const b=beastBy(m.id), pct=clamp(m.xp/xpNeed(m.level)*100,0,100); return `<div class="card partyCard"><div class="head"><div class="lhs">${creatureArt(m.id,'md')}<div><b>${b.name}</b><div>${typeTag(b.type)}</div></div></div><b>Lv ${m.level}</b></div><div class="stats">HP ${m.hp}/${maxHp(m)} · ATK ${statsFor(m)[1]} · DEF ${statsFor(m)[2]} · SP.ATK ${statsFor(m)[3]} · SP.DEF ${statsFor(m)[4]} · SPD ${statsFor(m)[5]}</div><div class="movesList">Moves: ${knownMoves(m).join(' · ')}</div><div class="xpBar"><i style="width:${pct}%"></i></div><small>XP ${m.xp}/${xpNeed(m.level)}</small>${i?`<button class="secondary makeLead" data-i="${i}">Make Lead</button>`:`<div class="movesList"><b>Lead Beast</b></div>`}</div>`;}).join(''); $$('.makeLead').forEach(btn=>btn.onclick=()=>{const i=+btn.dataset.i; const picked=state.party.splice(i,1)[0]; state.party.unshift(picked); save(); renderParty();});}
 function renderDex(){
   const seen=BEASTS.filter(b=>state.collection[b.id]).length;
@@ -503,9 +581,12 @@ function drawBuilding(b){
   ctx.fillStyle=b.trim;ctx.fillRect(x+doorPx+3,y+h-25,10,25);
   ctx.fillStyle='#76533b';ctx.fillRect(x+doorPx+4,y+h-23,8,23);
   ctx.fillStyle='#e4bf63';ctx.fillRect(x+doorPx+10,y+h-12,2,2);
-  // Small sign plaque.
-  ctx.fillStyle='#d8b96d';ctx.fillRect(x+Math.floor(w/2)-15,y+roofH+2,30,6);
-  ctx.fillStyle=b.trim;ctx.fillRect(x+Math.floor(w/2)-12,y+roofH+4,24,2);
+  // Readable building sign.
+  const sign=b.sign||'HOME',signW=Math.max(34,sign.length*6+8),signX=x+Math.floor(w/2-signW/2),signY=y+roofH+1;
+  ctx.fillStyle='#2a3040';ctx.fillRect(signX-1,signY-1,signW+2,11);
+  ctx.fillStyle='#f1d477';ctx.fillRect(signX,signY,signW,9);
+  ctx.fillStyle='#26314b';ctx.font='bold 7px monospace';ctx.textAlign='center';ctx.textBaseline='top';ctx.fillText(sign,x+Math.floor(w/2),signY+1);
+  ctx.textAlign='start';
 }
 
 function drawLandmark(l){
