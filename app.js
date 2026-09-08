@@ -173,7 +173,7 @@ blockRect(36,36,5,5); // fountain basin
 const WORLD_NPCS=[
   {id:'rowan',name:'Rowan',tx:58,ty:56,shirt:'#6c4d9e',hair:'#5b3b25'},
   {id:'mina',name:'Mina',tx:26,ty:43,shirt:'#3f7fb5',hair:'#7b4b2a'},
-  {id:'quarryman',name:'Bram',tx:84,ty:43,shirt:'#8a6336',hair:'#403126'}
+  {id:'quarryman',name:'Bram',tx:102,ty:66,shirt:'#8a6336',hair:'#403126'}
 ];
 const INTERACTION_POINTS=[
   {id:'townSign',tx:37,ty:69},
@@ -183,6 +183,43 @@ const INTERACTION_POINTS=[
   {id:'cave',tx:106,ty:64}
 ];
 function npcBox(n){return {x:n.tx*TILE+3,y:n.ty*TILE+2,w:10,h:12};}
+
+const CAVE_W=43,CAVE_H=31,CAVE_BOSS={id:'titanox',level:10,tx:41,ty:29};
+const caveGrid=Array.from({length:CAVE_H},()=>Array(CAVE_W).fill('#'));
+function buildCaveMaze(){
+  let seed=0x51c3a91d;
+  const rnd=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
+  const stack=[[1,1]];caveGrid[1][1]='.';
+  const dirs=[[2,0],[-2,0],[0,2],[0,-2]];
+  while(stack.length){
+    const [x,y]=stack[stack.length-1],choices=[];
+    for(const [dx,dy] of dirs){const nx=x+dx,ny=y+dy;if(nx>0&&ny>0&&nx<CAVE_W-1&&ny<CAVE_H-1&&caveGrid[ny][nx]==='#')choices.push([nx,ny,dx,dy]);}
+    if(!choices.length){stack.pop();continue;}
+    const [nx,ny,dx,dy]=choices[Math.floor(rnd()*choices.length)];
+    caveGrid[y+dy/2][x+dx/2]='.';caveGrid[ny][nx]='.';stack.push([nx,ny]);
+  }
+  // entrance throat and a handful of chambers stop it feeling like a pure grid maze.
+  caveGrid[2][1]='.';
+  for(const [cx,cy] of [[9,7],[21,9],[13,21],[31,19],[37,25]]){
+    for(let y=cy-1;y<=cy+1;y++)for(let x=cx-1;x<=cx+1;x++)if(x>0&&y>0&&x<CAVE_W-1&&y<CAVE_H-1)caveGrid[y][x]='.';
+  }
+  caveGrid[CAVE_BOSS.ty][CAVE_BOSS.tx]='.';
+  caveGrid[CAVE_BOSS.ty][CAVE_BOSS.tx-1]='.';
+  caveGrid[CAVE_BOSS.ty-1][CAVE_BOSS.tx]='.';
+}
+buildCaveMaze();
+function caveAt(tx,ty){return caveGrid[ty]&&caveGrid[ty][tx]||'#';}
+function caveSolid(box){return tilesTouching(box).some(([tx,ty])=>caveAt(tx,ty)==='#');}
+function pickCaveEncounter(){
+  const pool=BEASTS.filter(b=>!['Starter','Elite'].includes(b.rarity));
+  const weighted=[];
+  for(const b of pool){
+    const rarity={Common:6,Uncommon:3,Rare:1}[b.rarity]||1;
+    const typeBoost=(b.type==='Rock'||b.type==='Fire')?5:1;
+    for(let i=0;i<rarity*typeBoost;i++)weighted.push(b);
+  }
+  return weighted[Math.floor(Math.random()*weighted.length)];
+}
 
 const SOLID_GROUND=new Set(['w','W']);
 const SOLID_OBJECT=new Set(['t','t2','tp','n','rk','bu','st','bn','lp','sg','hl','hm','hr','wl','wr']);
@@ -337,6 +374,9 @@ const input={up:false,down:false,left:false,right:false};
 const images={};
 let activeInterior=null;
 let returnPos=null;
+let caveReturnPos=null;
+let caveEncounterDistance=0;
+let caveBossVisible=true;
 
 function loadImg(src){const img=new Image();img.src=assetUrl(src);images[src]=img;return img;}
 function loadTileAsset(val){if(Array.isArray(val))val.forEach(loadImg);else loadImg(val);}
@@ -374,6 +414,7 @@ function interiorSolid(box){
   return furniture.some(f=>rectOverlap(box,f));
 }
 function collideBox(box){
+  if(activeInterior==='cave')return caveSolid(box);
   if(activeInterior)return interiorSolid(box);
   if(tilesTouching(box).some(([tx,ty])=>isWorldSolid(tx,ty)))return true;
   return WORLD_NPCS.some(n=>rectOverlap(box,npcBox(n)));
@@ -389,12 +430,37 @@ function healParty(say=true){state.party.forEach(m=>m.hp=maxHp(m));save();if(say
 function distanceToTile(tx,ty){return Math.hypot(state.pos.x-(tx+.5)*TILE,state.pos.y-(ty+.5)*TILE);}
 
 function areaFor(tx,ty){
-  if(activeInterior)return activeInterior==='clinic'?'Rune Clinic':activeInterior==='inn'?'Moonbell Inn':'Rowan’s Workshop';
+  if(activeInterior)return activeInterior==='cave'?'Whisper Cave':activeInterior==='clinic'?'Rune Clinic':activeInterior==='inn'?'Moonbell Inn':'Rowan’s Workshop';
   if(tx>=73)return ty>=45?'Eastbank Wilds':'Eastbank Quarry';
   if(ty>=70)return'South Route';
   if(ty<24)return'North Runevale';
   if(ty>52)return'South Runevale';
   return'Runevale Town';
+}
+
+function enterCave(){
+  if(activeInterior)return;
+  caveReturnPos={x:(106.5)*TILE,y:(67.6)*TILE,dir:'down'};
+  activeInterior='cave';
+  state.pos={x:1.5*TILE,y:2.5*TILE};
+  state.dir='up';
+  caveEncounterDistance=0;
+  world.camera.x=world.camera.y=0;
+  world.lastTileKey='';
+  caveBossVisible=!state.flags.caveBossDefeated;
+  worldSay(state.flags.caveBossDefeated?'Whisper Cave is quiet now.':'Whisper Cave — Bram’s monster is somewhere deep inside.',3200);
+}
+function exitCave(){
+  if(activeInterior!=='cave'||!caveReturnPos)return;
+  activeInterior=null;
+  state.pos={x:caveReturnPos.x,y:caveReturnPos.y};state.dir='down';
+  caveReturnPos=null;world.lastTileKey='';
+  worldSay('You emerge from Whisper Cave.',1600);
+}
+function startCaveBoss(){
+  if(state.flags.caveBossDefeated||battle)return;
+  const beast=beastBy(CAVE_BOSS.id);
+  startBattle(beast,CAVE_BOSS.level,{boss:true,caveBoss:true,noCapture:true});
 }
 
 function enterInterior(id,building=null){
