@@ -153,49 +153,121 @@ function currentTile(){return {tx:Math.floor(state.pos.x/TILE), ty:Math.floor(st
 function healParty(say=true){state.party.forEach(m=>m.hp=maxHp(m)); save(); if(say) $('#worldText').textContent='The healing spring restored your party.';}
 function tryMove(dx,dy){const ox=state.pos.x, oy=state.pos.y; if(dx){const nx=ox+dx; const box=playerBox(nx,oy); if(!collideBox(box)) state.pos.x=nx;} if(dy){const ny=oy+dy; const box=playerBox(state.pos.x,ny); if(!collideBox(box)) state.pos.y=ny;}}
 function updateWorld(dt){if(!$('#worldScreen').classList.contains('active')||battle) return; let vx=0,vy=0; if(input.left) vx-=1; if(input.right) vx+=1; if(input.up) vy-=1; if(input.down) vy+=1; const moving=vx!==0||vy!==0; if(moving){const len=Math.hypot(vx,vy)||1; vx/=len; vy/=len; if(Math.abs(vx)>Math.abs(vy)) state.dir=vx>0?'right':'left'; else state.dir=vy>0?'down':'up'; const beforeX=state.pos.x,beforeY=state.pos.y; tryMove(vx*world.playerSpeed*dt,vy*world.playerSpeed*dt); const moved=Math.hypot(state.pos.x-beforeX,state.pos.y-beforeY); if(moved>0){state.steps+=1; world.encounterDistance+=moved; world.frameTimer+=dt; if(world.frameTimer>0.17){world.frame=(world.frame+1)%2; world.frameTimer=0;}}} else {world.frame=0; world.frameTimer=0;} const {tx,ty}=currentTile(); const g=groundAt(tx,ty); const o=objAt(tx,ty); if(HEAL_GROUND.has(g)){healParty(false); $('#worldText').textContent='The healing spring restored your party.';} else if(SAVE_OBJECT.has(o)){save(); $('#worldText').textContent='Your progress was saved at the rune crystal.';} else if(ENCOUNTER_GROUND.has(g)){$('#worldText').textContent='Tall grass rustles... wild Rune Beasts live here.'; if(world.encounterDistance>24 && Math.random()<0.04){world.encounterDistance=0; startBattle(pickEncounter()); return;}} else if(DOOR_OBJECT.has(o)) $('#worldText').textContent='The house is locked for now.'; else if(tx>=40&&tx<=47&&ty>=20&&ty<=25) $('#worldText').textContent='Runevale Bridge leads to Eastbank Quarry.'; else if(tx>=48) $('#worldText').textContent='Eastbank Quarry — wild Rune Beasts gather beyond the bridge.'; else $('#worldText').textContent='Explore Runevale Town.'; $('.areaName').textContent=tx>=48?'Eastbank Quarry':'Runevale Town'; world.camera.x=Math.round(clamp(state.pos.x-canvas.width/2,0,world.width-canvas.width)); world.camera.y=Math.round(clamp(state.pos.y-canvas.height/2,0,world.height-canvas.height));}
-const GROUND_COLOURS={'.':'#78b85f','g':'#4f8a46','p':'#c9ad76','w':'#4c8fc9','W':'#4c8fc9','b':'#b58a55','s':'#d6bd82','S':'#78b85f','f':'#78b85f','F':'#78b85f'};
+const GROUND_COLOURS={
+  '.':'#78b85f',
+  'g':'#4f8a46',
+  'p':'#c9ad76',
+  'w':'#4c8fc9',
+  'W':'#4c8fc9',
+  'b':'#b58a55',
+  's':'#d6bd82',
+  'S':'#78b85f',
+  'f':'#78b85f',
+  'F':'#78b85f'
+};
 
-// Pokémon-style terrain architecture: construct the complete ground layer once at native
-// resolution, then copy one continuous bitmap to the visible canvas every frame.
+// Seam-free Pokémon-style base terrain.
+// Ground is drawn procedurally into one continuous native-resolution bitmap.
+// Object artwork (houses, trees, bridge, mine etc.) remains layered on top.
 const groundLayer=document.createElement('canvas');
 groundLayer.width=MAP_W*TILE;
 groundLayer.height=MAP_H*TILE;
 const groundCtx=groundLayer.getContext('2d',{alpha:false});
 groundCtx.imageSmoothingEnabled=false;
 let groundLayerReady=false;
-let groundLayerBuilding=false;
 
-function paintNativeTile(target,img,dx,dy,g){
-  target.fillStyle=GROUND_COLOURS[g]||GROUND_COLOURS['.'];
-  target.fillRect(dx,dy,TILE,TILE);
-  if(!img||!img.complete||!img.naturalWidth) return;
-  const inset=(img.naturalWidth>4&&img.naturalHeight>4)?1:0;
-  target.drawImage(
-    img,
-    inset,inset,img.naturalWidth-inset*2,img.naturalHeight-inset*2,
-    dx,dy,TILE,TILE
-  );
+function rand2(x,y,s=0){
+  let n=(x*374761393 + y*668265263 + s*69069)>>>0;
+  n=(n^(n>>13))*1274126177>>>0;
+  return ((n^(n>>16))>>>0)/4294967295;
+}
+
+function drawGrassTile(c,x,y,variant=0){
+  c.fillStyle=variant?'#73b259':'#78b85f';
+  c.fillRect(x,y,TILE,TILE);
+  for(let i=0;i<5;i++){
+    const px=x+2+Math.floor(rand2(x+i,y,11)*12);
+    const py=y+2+Math.floor(rand2(x,y+i,23)*12);
+    c.fillStyle=i%2?'#6ca853':'#85c56b';
+    c.fillRect(px,py,1,1);
+  }
+}
+
+function drawPathTile(c,x,y){
+  c.fillStyle='#c9ad76';
+  c.fillRect(x,y,TILE,TILE);
+  c.fillStyle='#d8bf8b';
+  c.fillRect(x+2,y+3,2,1);
+  c.fillRect(x+10,y+11,2,1);
+  c.fillStyle='#b59661';
+  c.fillRect(x+6,y+7,1,1);
+  c.fillRect(x+13,y+4,1,1);
+}
+
+function drawSandTile(c,x,y){
+  c.fillStyle='#d6bd82';
+  c.fillRect(x,y,TILE,TILE);
+  c.fillStyle='#c9aa6e';
+  c.fillRect(x+4,y+5,1,1);
+  c.fillRect(x+11,y+12,1,1);
+}
+
+function drawWaterTile(c,x,y,tx,ty){
+  c.fillStyle='#4c8fc9';
+  c.fillRect(x,y,TILE,TILE);
+  const phase=(tx+ty)%2;
+  c.fillStyle='#6ba9d7';
+  c.fillRect(x+2+phase*2,y+5,6,1);
+  c.fillRect(x+8-phase*2,y+12,5,1);
+  c.fillStyle='#397ab4';
+  c.fillRect(x+5,y+8,4,1);
+}
+
+function drawTallGrassTile(c,x,y,tx,ty){
+  c.fillStyle='#4f8a46';
+  c.fillRect(x,y,TILE,TILE);
+  c.fillStyle='#376f38';
+  for(let i=0;i<4;i++){
+    const px=x+2+i*4+((tx+ty+i)&1);
+    c.fillRect(px,y+7,1,5);
+    c.fillRect(px+1,y+9,1,3);
+  }
+  c.fillStyle='#69a75b';
+  c.fillRect(x+3,y+4,1,4);
+  c.fillRect(x+11,y+5,1,4);
+}
+
+function drawFlowerTile(c,x,y,alt=false){
+  drawGrassTile(c,x,y,alt?1:0);
+  const colours=alt?['#ef8bb9','#fff2a8']:['#f2f0ff','#f1c74f'];
+  for(let i=0;i<3;i++){
+    const px=x+3+i*5;
+    const py=y+4+((i*3)%7);
+    c.fillStyle=colours[i%2];
+    c.fillRect(px,py,2,2);
+    c.fillStyle='#4b8b3f';
+    c.fillRect(px,py+2,1,2);
+  }
+}
+
+function paintBaseTile(c,tx,ty,g){
+  const x=tx*TILE, y=ty*TILE;
+  if(g==='p'||g==='b') return drawPathTile(c,x,y);
+  if(g==='s') return drawSandTile(c,x,y);
+  if(g==='w'||g==='W') return drawWaterTile(c,x,y,tx,ty);
+  if(g==='g') return drawTallGrassTile(c,x,y,tx,ty);
+  if(g==='f') return drawFlowerTile(c,x,y,false);
+  if(g==='F') return drawFlowerTile(c,x,y,true);
+  drawGrassTile(c,x,y,(tx+ty)%2);
 }
 
 function buildGroundLayer(){
-  if(groundLayerReady||groundLayerBuilding) return;
-  const needed=[...new Set(Object.values(TILESET).flat().filter(Boolean))];
-  if(needed.some(src=>!images[src]||!images[src].complete||!images[src].naturalWidth)){
-    requestAnimationFrame(buildGroundLayer);
-    return;
-  }
-  groundLayerBuilding=true;
   groundCtx.fillStyle=GROUND_COLOURS['.'];
   groundCtx.fillRect(0,0,groundLayer.width,groundLayer.height);
   for(let ty=0;ty<MAP_H;ty++){
-    for(let tx=0;tx<MAP_W;tx++){
-      const g=groundAt(tx,ty);
-      const key=groundSpriteKey(tx,ty);
-      paintNativeTile(groundCtx,images[key],tx*TILE,ty*TILE,g);
-    }
+    for(let tx=0;tx<MAP_W;tx++) paintBaseTile(groundCtx,tx,ty,groundAt(tx,ty));
   }
   groundLayerReady=true;
-  groundLayerBuilding=false;
 }
 
 function drawWorld(){
