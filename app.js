@@ -286,21 +286,32 @@ function renderMap(){
   m.fillStyle='#6fa95a';m.fillRect(0,0,c.width,c.height);
   for(let ty=0;ty<MAP_H;ty++)for(let tx=0;tx<MAP_W;tx++){
     const g=groundAt(tx,ty);
-    if(g==='w'||g==='W')m.fillStyle='#4c8fc9';
-    else if(g==='p'||g==='b')m.fillStyle=g==='b'?'#9c7245':'#c9ad76';
-    else if(g==='g')m.fillStyle='#3f7e3f';
-    else if(g==='s')m.fillStyle='#d6bd82';
+    if(g==='w'||g==='W')m.fillStyle='#45a1d8';
+    else if(g==='p'||g==='b')m.fillStyle=g==='b'?'#9a7047':'#d8c291';
+    else if(g==='g')m.fillStyle='#4f8f49';
+    else if(g==='s')m.fillStyle='#d8bf87';
     else continue;
     m.fillRect(Math.floor(tx*sx),Math.floor(ty*sy),Math.ceil(sx),Math.ceil(sy));
   }
-  const buildingColour={guild:'#e2bd45',clinic:'#d9646c',workshop:'#9b6c46',inn:'#6e74ad',homeA:'#c48765',homeB:'#7892a9'};
-  BUILDINGS.forEach(b=>{m.fillStyle=buildingColour[b.id]||'#ddd';m.fillRect(b.tx*sx,b.ty*sy,Math.max(3,b.w*sx),Math.max(3,b.h*sy));});
+  const buildingColour={guild:'#d8b84e',clinic:'#6f8fa8',workshop:'#6d7482',inn:'#c45d48',homeA:'#b86a55',homeB:'#728ba1'};
+  BUILDINGS.forEach(b=>{
+    m.fillStyle=buildingColour[b.id]||'#ddd';
+    m.fillRect(b.tx*sx,b.ty*sy,Math.max(3,b.w*sx),Math.max(3,b.h*sy));
+  });
   m.fillStyle='#6e6253';LANDMARKS.forEach(l=>m.fillRect(l.tx*sx,l.ty*sy,l.w*sx,l.h*sy));
   const px=state.pos.x/TILE*sx,py=state.pos.y/TILE*sy;
   m.fillStyle='#fff';m.fillRect(px-3,py-3,6,6);m.fillStyle='#17202d';m.fillRect(px-1,py-1,2,2);
   m.font='7px monospace';m.textBaseline='top';
-  const labels=[['MARKET',29,7],['CLINIC',15,43],['WORKSHOP',55,27],['INN',48,44],['MINE',91,16],['CAVE',105,56],['BRIDGE',69,36]];
-  labels.forEach(([t,x,y])=>{const xx=x*sx,yy=y*sy;m.fillStyle='rgba(8,15,27,.8)';m.fillRect(xx-2,yy-1,m.measureText(t).width+4,9);m.fillStyle='#fff5cf';m.fillText(t,xx,yy);});
+  const labels=[
+    ...BUILDINGS.filter(b=>['guild','clinic','workshop','inn'].includes(b.id)).map(b=>[b.sign,b.doorX,b.ty-1]),
+    ...LANDMARKS.map(l=>[l.id==='mine'?'MINE':'CAVE',l.doorX,l.ty-1]),
+    ['BRIDGE',72,34]
+  ];
+  labels.forEach(([t,x,y])=>{
+    const xx=x*sx,yy=y*sy,w=m.measureText(t).width;
+    m.fillStyle='rgba(8,15,27,.8)';m.fillRect(xx-2,yy-1,w+4,9);
+    m.fillStyle='#fff5cf';m.fillText(t,xx,yy);
+  });
 }function renderWorldPanels(){if(!$('#shards')) return; $('#shards').textContent=state.shards; $('#partyCount').textContent=`${state.party.length} / 6`; $('#partyMini').innerHTML=state.party.map((m,i)=>`<div class="partyMiniRow"><span>${i===0?'★ ':''}${beastBy(m.id).name} Lv${m.level} · ${m.hp}/${maxHp(m)} HP</span><span>${typeTag(beastBy(m.id).type)}</span></div>`).join(''); $('#trainerBadge').innerHTML=`<span class="badgeName">${state.trainerName}</span>`;}
 function renderParty(){$('#partyList').innerHTML=state.party.map((m,i)=>{const b=beastBy(m.id), pct=clamp(m.xp/xpNeed(m.level)*100,0,100); return `<div class="card partyCard"><div class="head"><div class="lhs">${creatureArt(m.id,'md')}<div><b>${b.name}</b><div>${typeTag(b.type)}</div></div></div><b>Lv ${m.level}</b></div><div class="stats">HP ${m.hp}/${maxHp(m)} · ATK ${statsFor(m)[1]} · DEF ${statsFor(m)[2]} · SP.ATK ${statsFor(m)[3]} · SP.DEF ${statsFor(m)[4]} · SPD ${statsFor(m)[5]}</div><div class="movesList">Moves: ${knownMoves(m).join(' · ')}</div><div class="xpBar"><i style="width:${pct}%"></i></div><small>XP ${m.xp}/${xpNeed(m.level)}</small>${i?`<button class="secondary makeLead" data-i="${i}">Make Lead</button>`:`<div class="movesList"><b>Lead Beast</b></div>`}</div>`;}).join(''); $$('.makeLead').forEach(btn=>btn.onclick=()=>{const i=+btn.dataset.i; const picked=state.party.splice(i,1)[0]; state.party.unshift(picked); save(); renderParty();});}
 function renderDex(){
