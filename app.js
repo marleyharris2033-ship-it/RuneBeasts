@@ -509,6 +509,13 @@ function nearestLandmark(){
 function interactWorld(){
   if(battle||!$('#worldScreen').classList.contains('active'))return;
 
+  if(activeInterior==='cave'){
+    const {tx,ty}=currentTile();
+    if(tx===1&&ty<=3){exitCave();return;}
+    if(caveBossVisible&&!state.flags.caveBossDefeated&&Math.hypot(tx-CAVE_BOSS.tx,ty-CAVE_BOSS.ty)<3){startCaveBoss();return;}
+    worldSay('The cave walls echo. The maze continues deeper...',1800);return;
+  }
+
   if(activeInterior){
     const {tx,ty}=currentTile();
     if(ty>=12&&tx>=8&&tx<=12){exitInterior();return;}
@@ -603,6 +610,26 @@ function updateWorld(dt){
 
   const {tx,ty}=currentTile();
   $('.areaName').textContent=areaFor(tx,ty);
+
+  if(activeInterior==='cave'){
+    const movedNow=moving?Math.hypot(vx*world.playerSpeed*dt,vy*world.playerSpeed*dt):0;
+    if(movedNow>0)caveEncounterDistance+=movedNow;
+    if(tx===1&&ty<=2&&state.dir==='up'){exitCave();return;}
+    if(caveBossVisible&&!state.flags.caveBossDefeated&&Math.hypot(tx-CAVE_BOSS.tx,ty-CAVE_BOSS.ty)<=1.4){startCaveBoss();return;}
+    const caveKey=tx+','+ty;
+    if(caveKey!==world.lastTileKey){
+      world.lastTileKey=caveKey;
+      if(caveEncounterDistance>34&&Math.random()<.11){
+        caveEncounterDistance=0;startBattle(pickCaveEncounter());return;
+      }
+    }
+    if(performance.now()>=world.messageUntil){
+      $('#worldText').textContent=state.flags.caveBossDefeated?'Whisper Cave is quiet. Find your way back to the entrance.':'The tunnels twist deeper into Whisper Cave...';
+    }
+    world.camera.x=Math.round(clamp(state.pos.x-canvas.width/2,0,CAVE_W*TILE-canvas.width));
+    world.camera.y=Math.round(clamp(state.pos.y-canvas.height/2,0,CAVE_H*TILE-canvas.height));
+    return;
+  }
 
   if(activeInterior){
     if(ty>=12&&tx>=8&&tx<=12){exitInterior();return;}
@@ -877,8 +904,51 @@ function drawInterior(){
   ctx.fillStyle='#15191e';ctx.fillRect(144,218,32,12);
 }
 
+function drawCave(){
+  ctx.fillStyle='#17171b';ctx.fillRect(0,0,canvas.width,canvas.height);
+  const firstX=Math.floor(world.camera.x/TILE),firstY=Math.floor(world.camera.y/TILE);
+  const ox=-(world.camera.x%TILE),oy=-(world.camera.y%TILE);
+  const cols=Math.ceil(canvas.width/TILE)+2,rows=Math.ceil(canvas.height/TILE)+2;
+  for(let y=0;y<rows;y++)for(let x=0;x<cols;x++){
+    const tx=firstX+x,ty=firstY+y,px=Math.floor(ox+x*TILE),py=Math.floor(oy+y*TILE);
+    if(tx<0||ty<0||tx>=CAVE_W||ty>=CAVE_H){ctx.fillStyle='#101014';ctx.fillRect(px,py,TILE,TILE);continue;}
+    const wall=caveAt(tx,ty)==='#';
+    if(wall){
+      ctx.fillStyle='#29272b';ctx.fillRect(px,py,TILE,TILE);
+      ctx.fillStyle='#3b383d';ctx.fillRect(px+1,py+1,14,4);
+      ctx.fillStyle='#1d1b20';ctx.fillRect(px,py+12,TILE,4);
+      if((tx*7+ty*11)%9===0){ctx.fillStyle='#6c5a45';ctx.fillRect(px+5,py+6,6,4);}
+    }else{
+      ctx.fillStyle='#444047';ctx.fillRect(px,py,TILE,TILE);
+      ctx.fillStyle='#514c53';ctx.fillRect(px+2,py+3,5,3);ctx.fillRect(px+10,py+10,4,2);
+      ctx.fillStyle='#363239';ctx.fillRect(px+5,py+13,6,2);
+      if((tx+ty)%17===0){ctx.fillStyle='#d8793c';ctx.fillRect(px+7,py+4,2,5);ctx.fillStyle='#f2c05b';ctx.fillRect(px+7,py+3,2,3);}
+      if((tx*5+ty)%23===0){ctx.fillStyle='#b66b43';ctx.fillRect(px+5,py+6,3,3);ctx.fillStyle='#d39a5c';ctx.fillRect(px+8,py+8,3,3);}
+    }
+  }
+
+  // Entrance marker.
+  const ex=Math.round(1.5*TILE-world.camera.x),ey=Math.round(1.2*TILE-world.camera.y);
+  ctx.fillStyle='#0b0b0e';ctx.fillRect(ex-9,ey-12,18,14);ctx.fillStyle='#796446';ctx.fillRect(ex-11,ey-13,3,16);ctx.fillRect(ex+8,ey-13,3,16);
+
+  // Visible boss sprite at the far end.
+  if(caveBossVisible&&!state.flags.caveBossDefeated){
+    const bx=Math.round((CAVE_BOSS.tx+.5)*TILE-world.camera.x),by=Math.round((CAVE_BOSS.ty+.5)*TILE-world.camera.y);
+    if(bx>-50&&by>-50&&bx<canvas.width+50&&by<canvas.height+50){
+      ctx.fillStyle='rgba(170,54,36,.20)';ctx.beginPath();ctx.arc(bx,by,24,0,Math.PI*2);ctx.fill();
+      const src=SPRITES[CAVE_BOSS.id]?assetUrl(SPRITES[CAVE_BOSS.id]):proceduralBeastSprite(CAVE_BOSS.id);
+      let img=images['caveBossTitanox'];
+      if(!img){img=new Image();img.src=src;images['caveBossTitanox']=img;}
+      if(img.complete)ctx.drawImage(img,bx-24,by-28,48,48);
+      ctx.fillStyle='#f0c565';ctx.font='bold 7px monospace';ctx.textAlign='center';ctx.fillText('TITANOX',bx,by+23);ctx.textAlign='start';
+    }
+  }
+}
+
 function drawWorld(){
-  if(activeInterior){
+  if(activeInterior==='cave'){
+    drawCave();
+  }else if(activeInterior){
     drawInterior();
   }else{
     if(!groundLayerReady)buildGroundLayer();
@@ -908,7 +978,7 @@ function drawWorld(){
 
   const trainerFrames=TRAINER_FRAMES[state.trainerGender]||TRAINER_FRAMES.boy;
   const pImg=images[trainerFrames[state.dir][world.frame]];
-  const camX=activeInterior?0:world.camera.x,camY=activeInterior?0:world.camera.y;
+  const camX=activeInterior&&activeInterior!=='cave'?0:world.camera.x,camY=activeInterior&&activeInterior!=='cave'?0:world.camera.y;
   const drawX=Math.round(state.pos.x-camX-world.drawSize/2),drawY=Math.round(state.pos.y-camY-world.drawSize/2-6);
   if(pImg&&pImg.complete)ctx.drawImage(pImg,drawX,drawY,world.drawSize,world.drawSize);
   else{ctx.fillStyle='#ff6767';ctx.fillRect(drawX+8,drawY+8,16,16);}
