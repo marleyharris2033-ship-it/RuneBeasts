@@ -2,122 +2,121 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#0b1020">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+  <meta name="theme-color" content="#0d1324">
   <title>Rune Beasts</title>
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="styles.css?v=3">
+  <link rel="stylesheet" href="styles.css?v=4">
 </head>
 <body>
-<main id="app">
-  <section id="titleScreen" class="screen active">
-    <div class="titleArt">
-      <div class="titleOverlay">
-        <div class="logo">R</div>
-        <h1>RUNE BEASTS</h1>
-        <p class="tag">Bind. Battle. Evolve.</p>
-        <div class="panel titlePanel">
-          <button id="newGameBtn" class="primary big">NEW GAME</button>
-          <button id="continueBtn" class="secondary big hidden">CONTINUE</button>
+  <main id="app">
+    <section id="titleScreen" class="screen active">
+      <div class="titleBg">
+        <div class="overlay">
+          <div class="logo">R</div>
+          <h1>RUNE BEASTS</h1>
+          <p class="tag">Bind. Battle. Evolve.</p>
+          <div class="panel titlePanel">
+            <button id="newGameBtn" class="primary big">New Game</button>
+            <button id="continueBtn" class="secondary big hidden">Continue</button>
+          </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <section id="starterScreen" class="screen">
-    <div class="top"><button class="backBtn" data-screen="titleScreen">←</button><h2>Choose your starter</h2></div>
-    <p class="muted">Now with real sprites and a scenic overworld.</p>
-    <div id="starterChoices" class="starterGrid"></div>
-  </section>
+    <section id="starterScreen" class="screen">
+      <div class="topbar"><button class="backBtn" data-screen="titleScreen">←</button><h2>Choose your starter</h2></div>
+      <p class="muted">These now use real sprite assets. More creature sprites can be added next.</p>
+      <div id="starterChoices" class="cardGrid"></div>
+    </section>
 
-  <section id="worldScreen" class="screen">
-    <div class="top">
-      <div><small>AREA</small><b>Runevale Meadow</b></div>
-      <div class="shards">✦ <span id="shards">100</span></div>
-    </div>
-
-    <div class="panel mapWrap">
-      <div id="map" class="mapGrid" aria-label="World map"></div>
-      <div class="mapLegend">Walk on paths and grass. Wild encounters happen in tall grass.</div>
-      <div id="worldText" class="worldText">Use the arrows to explore.</div>
-      <div class="dpad">
-        <span></span><button data-dir="up">▲</button><span></span>
-        <button data-dir="left">◀</button><button data-dir="down">▼</button><button data-dir="right">▶</button>
+    <section id="worldScreen" class="screen">
+      <div class="topbar">
+        <div><small>AREA</small><div class="areaName">Runevale Meadow</div></div>
+        <div class="hudGroup">✦ <span id="shards">100</span></div>
       </div>
-    </div>
 
-    <div class="panel">
-      <div class="top"><b>PARTY</b><span id="partyCount"></span></div>
-      <div id="partyMini"></div>
-    </div>
-
-    <nav class="bottomNav">
-      <button data-screen="worldScreen">Explore</button>
-      <button data-screen="partyScreen">Party</button>
-      <button data-screen="dexScreen">Beastdex</button>
-      <button data-screen="profileScreen">Save</button>
-    </nav>
-  </section>
-
-  <section id="battleScreen" class="screen">
-    <div class="arena">
-      <div class="zone enemyZone">
-        <div class="info">
-          <div class="nameLine"><b id="enemyName"></b><span id="enemyLevel"></span></div>
-          <div id="enemyType"></div>
-          <div class="hp"><i id="enemyHpBar"></i></div>
+      <div class="panel">
+        <div class="worldShell">
+          <canvas id="worldCanvas" width="320" height="240"></canvas>
         </div>
-        <div id="enemySprite"></div>
-      </div>
-      <div class="zone playerZone">
-        <div id="playerSprite"></div>
-        <div class="info">
-          <div class="nameLine"><b id="playerName"></b><span id="playerLevel"></span></div>
-          <div id="playerType"></div>
-          <div class="hp"><i id="playerHpBar"></i></div>
-          <small id="playerHpText"></small>
+        <p id="worldText" class="worldText">Use the D-pad to walk around the map.</p>
+        <div class="dpad">
+          <span></span><button class="control" data-dir="up">▲</button><span></span>
+          <button class="control" data-dir="left">◀</button><button class="control" data-dir="down">▼</button><button class="control" data-dir="right">▶</button>
         </div>
       </div>
-    </div>
 
-    <div class="panel battlePanel">
-      <p id="battleText">A wild Rune Beast appeared!</p>
-
-      <div id="mainBattleMenu" class="actions">
-        <button id="movesBtn" class="primary">MOVES</button>
-        <button id="captureBtn" class="secondary">BIND</button>
-        <button id="switchBtn" class="secondary">PARTY</button>
-        <button id="runBtn" class="danger">RUN</button>
+      <div class="panel">
+        <div class="topbar smallbar"><b>Party</b><span id="partyCount">1 / 6</span></div>
+        <div id="partyMini"></div>
       </div>
 
-      <div id="movesMenu" class="moveGrid hidden"></div>
-      <div id="switchMenu" class="switchMenu hidden"></div>
-      <button id="cancelBattleSubmenu" class="secondary big hidden">BACK</button>
-    </div>
-  </section>
+      <nav class="bottomNav">
+        <button data-screen="worldScreen">Explore</button>
+        <button data-screen="partyScreen">Party</button>
+        <button data-screen="dexScreen">Beastdex</button>
+        <button data-screen="profileScreen">Save</button>
+      </nav>
+    </section>
 
-  <section id="partyScreen" class="screen">
-    <div class="top"><button class="backBtn" data-screen="worldScreen">←</button><h2>Your Party</h2></div>
-    <div id="partyList"></div>
-  </section>
+    <section id="battleScreen" class="screen">
+      <div class="battleArena">
+        <div class="battleRow enemy">
+          <div class="battleInfo">
+            <div class="nameRow"><b id="enemyName"></b><span id="enemyLevel"></span></div>
+            <div id="enemyType"></div>
+            <div class="hpBar"><i id="enemyHpBar"></i></div>
+          </div>
+          <div id="enemySprite" class="battleSprite"></div>
+        </div>
 
-  <section id="dexScreen" class="screen">
-    <div class="top"><button class="backBtn" data-screen="worldScreen">←</button><h2>Beastdex</h2></div>
-    <div class="panel"><b id="dexProgress">0 / 24 discovered</b></div>
-    <div id="dexList" class="dexGrid"></div>
-  </section>
+        <div class="battleRow player">
+          <div id="playerSprite" class="battleSprite"></div>
+          <div class="battleInfo">
+            <div class="nameRow"><b id="playerName"></b><span id="playerLevel"></span></div>
+            <div id="playerType"></div>
+            <div class="hpBar"><i id="playerHpBar"></i></div>
+            <small id="playerHpText"></small>
+          </div>
+        </div>
+      </div>
 
-  <section id="profileScreen" class="screen">
-    <div class="top"><button class="backBtn" data-screen="worldScreen">←</button><h2>Save</h2></div>
-    <div class="panel">
-      <p>Progress saves automatically on this device.</p>
-      <div id="saveStats"></div>
-      <button id="healBtn" class="secondary big">REST PARTY</button>
-      <button id="manualSaveBtn" class="primary big">SAVE NOW</button>
-      <button id="resetBtn" class="danger big">RESET GAME</button>
-    </div>
-  </section>
-</main>
-<script src="app.js?v=3"></script>
+      <div class="panel">
+        <p id="battleText" class="battleText">A wild Rune Beast appeared!</p>
+        <div id="mainBattleMenu" class="actions">
+          <button id="movesBtn" class="primary">Moves</button>
+          <button id="captureBtn" class="secondary">Bind</button>
+          <button id="switchBtn" class="secondary">Party</button>
+          <button id="runBtn" class="danger">Run</button>
+        </div>
+        <div id="movesMenu" class="menuGrid hidden"></div>
+        <div id="switchMenu" class="switchMenu hidden"></div>
+        <button id="cancelBattleSubmenu" class="secondary big hidden">Back</button>
+      </div>
+    </section>
+
+    <section id="partyScreen" class="screen">
+      <div class="topbar"><button class="backBtn" data-screen="worldScreen">←</button><h2>Your Party</h2></div>
+      <div id="partyList"></div>
+    </section>
+
+    <section id="dexScreen" class="screen">
+      <div class="topbar"><button class="backBtn" data-screen="worldScreen">←</button><h2>Beastdex</h2></div>
+      <div class="panel"><b id="dexProgress">0 / 24 discovered</b></div>
+      <div id="dexList" class="cardGrid"></div>
+    </section>
+
+    <section id="profileScreen" class="screen">
+      <div class="topbar"><button class="backBtn" data-screen="worldScreen">←</button><h2>Save</h2></div>
+      <div class="panel">
+        <div id="saveStats"></div>
+        <button id="healBtn" class="secondary big">Rest Party</button>
+        <button id="manualSaveBtn" class="primary big">Save Now</button>
+        <button id="resetBtn" class="danger big">Reset Game</button>
+      </div>
+    </section>
+  </main>
+  <script src="app.js?v=4"></script>
 </body>
 </html>
