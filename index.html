@@ -3,44 +3,44 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-  <meta name="theme-color" content="#0d1324">
+  <meta name="theme-color" content="#0e1528">
   <title>Rune Beasts</title>
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="styles.css?v=5">
+  <link rel="stylesheet" href="styles.css?v=6">
 </head>
 <body>
   <main id="app">
     <section id="titleScreen" class="screen active">
-      <div class="titleBg">
-        <div class="overlay">
-          <div class="logo">R</div>
-          <h1>RUNE BEASTS</h1>
-          <p class="tag">Bind. Battle. Evolve.</p>
-          <div class="panel titlePanel">
-            <button id="newGameBtn" class="primary big">New Game</button>
-            <button id="continueBtn" class="secondary big hidden">Continue</button>
-          </div>
+      <div class="titleWrap">
+        <div class="logo">R</div>
+        <h1>RUNE BEASTS</h1>
+        <p class="tag">Bind. Battle. Evolve.</p>
+        <div class="panel narrow">
+          <button id="newGameBtn" class="primary big">New Game</button>
+          <button id="continueBtn" class="secondary big hidden">Continue</button>
         </div>
       </div>
     </section>
 
     <section id="starterScreen" class="screen">
       <div class="topbar"><button class="backBtn" data-screen="titleScreen">←</button><h2>Choose your starter</h2></div>
-      <p class="muted">These now use real sprite assets. More creature sprites can be added next.</p>
-      <div id="starterChoices" class="cardGrid"></div>
+      <p class="muted">This build uses a proper tile map with real grass encounter tiles.</p>
+      <div id="starterChoices" class="grid cards"></div>
     </section>
 
     <section id="worldScreen" class="screen">
       <div class="topbar">
-        <div><small>AREA</small><div class="areaName">Runevale Meadow</div></div>
-        <div class="hudGroup">✦ <span id="shards">100</span></div>
+        <div><small>AREA</small><div class="areaName">Runevale Route</div></div>
+        <div class="hud">✦ <span id="shards">100</span></div>
       </div>
 
       <div class="panel">
-        <div class="worldShell">
-          <canvas id="worldCanvas" width="320" height="240"></canvas>
+        <div class="canvasFrame"><canvas id="worldCanvas" width="320" height="240"></canvas></div>
+        <p id="worldText" class="worldText">Walk around the route. Tall grass can trigger battles.</p>
+        <div class="legend">
+          <span><i class="chip chip-grass"></i> Tall grass = encounters</span>
+          <span><i class="chip chip-spring"></i> Spring = heal</span>
         </div>
-        <p id="worldText" class="worldText">Use the D-pad to walk around the map.</p>
         <div class="dpad">
           <span></span><button class="control" data-dir="up">▲</button><span></span>
           <button class="control" data-dir="left">◀</button><button class="control" data-dir="down">▼</button><button class="control" data-dir="right">▶</button>
@@ -48,7 +48,7 @@
       </div>
 
       <div class="panel">
-        <div class="topbar smallbar"><b>Party</b><span id="partyCount">1 / 6</span></div>
+        <div class="topbar smallbar"><b>Party</b><span id="partyCount"></span></div>
         <div id="partyMini"></div>
       </div>
 
@@ -70,7 +70,6 @@
           </div>
           <div id="enemySprite" class="battleSprite"></div>
         </div>
-
         <div class="battleRow player">
           <div id="playerSprite" class="battleSprite"></div>
           <div class="battleInfo">
@@ -81,7 +80,6 @@
           </div>
         </div>
       </div>
-
       <div class="panel">
         <p id="battleText" class="battleText">A wild Rune Beast appeared!</p>
         <div id="mainBattleMenu" class="actions">
@@ -104,7 +102,7 @@
     <section id="dexScreen" class="screen">
       <div class="topbar"><button class="backBtn" data-screen="worldScreen">←</button><h2>Beastdex</h2></div>
       <div class="panel"><b id="dexProgress">0 / 24 discovered</b></div>
-      <div id="dexList" class="cardGrid"></div>
+      <div id="dexList" class="grid cards"></div>
     </section>
 
     <section id="profileScreen" class="screen">
@@ -117,6 +115,6 @@
       </div>
     </section>
   </main>
-  <script src="app.js?v=5"></script>
+  <script src="app.js?v=6"></script>
 </body>
 </html>
